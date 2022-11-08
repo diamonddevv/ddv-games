@@ -1,29 +1,29 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "ddvgames",
   "version": "${version}",
 
-  "name": "DiamondDev Template Mod",
+  "name": "DiamondDev Minigames",
   "description": "bottom text",
   "authors": [
     "DiamondDev"
   ],
   "contact": {
     "homepage": "https://github.com/diamonddevv/",
-    "sources": "https://github.com/diamonddevv/diamonddev-template-mod"
+    "sources": "https://github.com/diamonddevv/ddv-games"
   },
 
   "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/ddvgames/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.diamonddev.template.TemplateMod"
+      "net.diamonddev.ddvgames.DDVGamesMod"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "ddvgames.mixins.json"
   ],
 
   "depends": {
