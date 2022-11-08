@@ -1,0 +1,7 @@
+{
+  "ddv.minigame.test": "Test",
+
+  "ddv.command.set_game": "Minigame set to: %s",
+  "ddv.argument.invalid_game": "The minigame %s could not be found!",
+  "ddv.argument.not_running": "Couldn't stop minigame (No minigame is running)"
+}
