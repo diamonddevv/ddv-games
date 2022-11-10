@@ -1,6 +1,8 @@
 package net.diamonddev.ddvgames.minigame;
 
+import net.diamonddev.ddvgames.minigame.setting.Setting;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,7 +10,7 @@ import java.util.Collection;
 public class GameManager {
 
     private static GameManager manager;
-
+    private Collection<Setting> settings;
     private Minigame game;
     private Collection<PlayerEntity> players;
     public PlayerEntity winner;
@@ -17,8 +19,8 @@ public class GameManager {
         this.game = null;
         this.players = new ArrayList<>();
         this.winner = null;
+        this.settings = new ArrayList<>();
     }
-
     public static GameManager getGameManager() {
         if (manager == null) {
             manager = new GameManager();
@@ -52,6 +54,13 @@ public class GameManager {
         }
     }
 
+    public boolean hasGame() {
+        return this.game != null;
+    }
+
+    private void addGameSettingsToList(ArrayList<Setting> gameSettings) {
+        this.settings = gameSettings;
+    }
     public Minigame getGame() {
         return this.game;
     }
@@ -63,11 +72,20 @@ public class GameManager {
         players.addAll(this.players);
     }
 
-    public void declareWinner(PlayerEntity player) {
-        if (this.players.contains(player)) {
-            this.winner = player;
-            game.onPlayerWin(player);
+    public double getSetting(String simpleName) {
+        for (Setting s : settings) {
+            if (s.getSimpleName().matches(simpleName)) {
+                return s.getValue();
+            }
         }
+        return -1;
     }
 
+    public void setSetting(String simpleName, double val) {
+        for (Setting s : settings) {
+            if (s.getSimpleName().matches(simpleName)) {
+                s.setValue(val);
+            }
+        }
+    }
 }

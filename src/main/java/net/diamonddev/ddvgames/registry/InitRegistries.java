@@ -16,5 +16,6 @@ public class InitRegistries implements RegistryInitializer {
                 Minigame.class,
                 DDVGamesMod.id.build("minigames")
         ).buildAndRegister();
+
     }
 }

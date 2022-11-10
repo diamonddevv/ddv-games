@@ -1,7 +1,13 @@
 {
-  "ddv.minigame.test": "Test",
+  "ddv.command.feedback.set_game": "Minigame set to: %s",
+  "ddv.command.feedback.get_game": "Minigame currently set to: %s",
+  "ddv.command.feedback.getSettingVal": "Setting %s is currently set to: %s",
+  "ddv.command.feedback.start_game": "Started minigame %s!",
+  "ddv.command.feedback.stop_game": "Stopped minigame %s.",
 
-  "ddv.command.set_game": "Minigame set to: %s",
-  "ddv.argument.invalid_game": "The minigame %s could not be found!",
-  "ddv.argument.not_running": "Couldn't stop minigame (No minigame is running)"
+  "ddv.command.exception.invalid_game": "The minigame %s could not be found!",
+  "ddv.command.exception.invalid_setting": "The setting %s could not be found!",
+  "ddv.command.exception.not_running": "Couldn't stop minigame (No minigame is running)",
+  "ddv.command.exception.running": "Couldn't edit minigame settings (Minigame is running)",
+  "ddv.command.exception.no_game": "Couldn't edit minigame settings (No minigame is selected)"
 }
