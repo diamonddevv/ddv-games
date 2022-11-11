@@ -1,8 +1,6 @@
 package net.diamonddev.ddvgames.minigame;
 
-import net.diamonddev.ddvgames.minigame.setting.Setting;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,7 +34,14 @@ public class GameManager {
         }
         return false;
     }
-
+    public boolean isGameRunning(Minigame game) {
+        if (this.game != null && game != null) {
+            if (this.game == game) {
+                return this.isGameRunning();
+            }
+        }
+        return false;
+    }
     public void startGame() {
         if (game != null) {
             game.start(this.players);
@@ -51,6 +56,7 @@ public class GameManager {
     public void setGame(Minigame game) {
         if (!this.isGameRunning()) {
             this.game = game;
+            addGameSettingsToList(game.getSettings());
         }
     }
 
@@ -70,6 +76,10 @@ public class GameManager {
     }
     public void addPlayers(Collection<PlayerEntity> players) {
         players.addAll(this.players);
+    }
+
+    public Collection<Setting> getSettings() {
+        return settings;
     }
 
     public double getSetting(String simpleName) {

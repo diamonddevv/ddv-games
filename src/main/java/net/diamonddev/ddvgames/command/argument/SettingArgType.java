@@ -4,11 +4,12 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.diamonddev.ddvgames.DDVGamesMod;
-import net.diamonddev.ddvgames.minigame.setting.Setting;
+import net.diamonddev.ddvgames.minigame.Setting;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class SettingArgType extends StringArrayListArgType {
 
@@ -23,9 +24,10 @@ public class SettingArgType extends StringArrayListArgType {
 
 
     public static Setting getSetting(CommandContext<ServerCommandSource> context, String argumentName) throws CommandSyntaxException {
-        ArrayList<Setting> settings = DDVGamesMod.gameManager.getGame().getSettings();
+        Collection<Setting> settings = DDVGamesMod.gameManager.getSettings();
         String simpleName = context.getArgument(argumentName, String.class);
         Setting setting = null;
+        System.out.println(simpleName);
         for (Setting s : settings) {
             if (s.getSimpleName().matches(simpleName)) {
                 setting = s;
@@ -44,7 +46,7 @@ public class SettingArgType extends StringArrayListArgType {
     public ArrayList<String> getArray() {
         ArrayList<String> names = new ArrayList<>();
         if (DDVGamesMod.gameManager.hasGame()) {
-            DDVGamesMod.gameManager.getGame().getSettings().forEach(setting -> names.add(setting.getSimpleName()));
+            DDVGamesMod.gameManager.getSettings().forEach(setting -> names.add(setting.getSimpleName()));
         }
         return names;
     }
