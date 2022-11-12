@@ -20,6 +20,16 @@
   "entrypoints": {
     "main": [
       "net.diamonddev.ddvgames.DDVGamesMod"
+    ],
+    "cardinal-components": [
+      "net.diamonddev.ddvgames.cca.DDVGamesEntityComponents",
+      "net.diamonddev.ddvgames.cca.DDVGamesLevelComponents"
+    ]
+  },
+  "custom": {
+    "cardinal-components": [
+      "ddvgames:role",
+      "ddvgames:gamemanager"
     ]
   },
   "mixins": [
@@ -31,8 +41,5 @@
     "fabric": "*",
     "minecraft": "~1.19",
     "java": ">=17"
-  },
-  "suggests": {
-
   }
 }

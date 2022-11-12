@@ -4,8 +4,12 @@
   "package": "net.diamonddev.ddvgames.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "MinecraftServerMixin",
+    "PlayerEntityMixin"
   ],
   "client": [
+  ],
+  "server": [
   ],
   "injectors": {
     "defaultRequire": 1

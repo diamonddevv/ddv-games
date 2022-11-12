@@ -27,7 +27,6 @@ public class SettingArgType extends StringArrayListArgType {
         Collection<Setting> settings = DDVGamesMod.gameManager.getSettings();
         String simpleName = context.getArgument(argumentName, String.class);
         Setting setting = null;
-        System.out.println(simpleName);
         for (Setting s : settings) {
             if (s.getSimpleName().matches(simpleName)) {
                 setting = s;

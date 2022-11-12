@@ -1,9 +1,7 @@
 package net.diamonddev.ddvgames;
 
 import net.diamonddev.ddvgames.minigame.GameManager;
-import net.diamonddev.ddvgames.registry.InitCommand;
-import net.diamonddev.ddvgames.registry.InitMinigames;
-import net.diamonddev.ddvgames.registry.InitRegistries;
+import net.diamonddev.ddvgames.registry.*;
 import net.diamonddev.libgenetics.common.api.v1.util.IdentifierBuilder;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
@@ -24,8 +22,19 @@ public class DDVGamesMod implements ModInitializer {
 		new InitMinigames().register();
 
 		new InitCommand().register();
+
+		new InitRules().register();
+
+		EventListeners.onDisconnectServer();
+
 		//
 		long initTime = System.currentTimeMillis() - start;
 		LOGGER.info("Mod " + modid + " initialized in " + initTime + " millisecond(s)!");
 	}
+
+	public static void updateGameManager(GameManager newManager) {
+		gameManager = newManager;
+	}
+
+
 }

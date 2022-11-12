@@ -6,12 +6,22 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.diamonddev.ddvgames.DDVGamesMod;
+import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.command.argument.MinigameArgType;
+import net.diamonddev.ddvgames.command.argument.RoleArgType;
 import net.diamonddev.ddvgames.command.argument.SettingArgType;
 import net.diamonddev.ddvgames.minigame.Minigame;
+import net.diamonddev.ddvgames.minigame.Role;
 import net.diamonddev.ddvgames.minigame.Setting;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -22,6 +32,8 @@ public class MinigameCommand {
     private static final SimpleCommandExceptionType RUNNING = new SimpleCommandExceptionType(Text.translatable("ddv.command.exception.running"));
     private static final SimpleCommandExceptionType RUNNING_SET = new SimpleCommandExceptionType(Text.translatable("ddv.command.exception.running_set"));
     private static final SimpleCommandExceptionType NO_GAME = new SimpleCommandExceptionType(Text.translatable("ddv.command.exception.no_game"));
+    private static final SimpleCommandExceptionType CANNOT_START = new SimpleCommandExceptionType(Text.translatable("ddv.command.exception.cannot_start"));
+    private static final SimpleCommandExceptionType ALREADY_RUNNING = new SimpleCommandExceptionType(Text.translatable("ddv.command.exception.already_running"));
 
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -44,6 +56,36 @@ public class MinigameCommand {
                                 )
                         ).then(literal("get")
                                 .executes(MinigameCommand::exeGet)
+                        ).then(literal("players")
+                                .then(literal("add")
+                                        .then(argument("players", EntityArgumentType.players())
+                                                .executes(MinigameCommand::exeAddPlayers)
+                                        )
+                                ).then(literal("remove")
+                                        .then(argument("players", EntityArgumentType.players())
+                                                .executes(MinigameCommand::exeRemovePlayers)
+                                        )
+                                ).then(literal("clear")
+                                        .executes(MinigameCommand::exeRemoveAll)
+                                ).then(literal("get")
+                                        .executes(MinigameCommand::exeGetPlayers)
+                                )
+                        ).then(literal("roles")
+                                .then(literal("attach")
+                                        .then(argument("players", EntityArgumentType.players())
+                                                .then(argument("role", RoleArgType.role())
+                                                        .executes(MinigameCommand::exeAddPlayersRole)
+                                                )
+                                        )
+                                ).then(literal("detach")
+                                        .then(argument("players", EntityArgumentType.players())
+                                                .executes(MinigameCommand::exeRemovePlayersRole)
+                                        )
+                                ).then(literal("getplayers")
+                                        .then(argument("role", RoleArgType.role())
+                                                .executes(MinigameCommand::exeGetPlayersInRole)
+                                        )
+                                )
                         )
         );
     }
@@ -59,7 +101,6 @@ public class MinigameCommand {
             throw RUNNING_SET.create();
         }
     }
-
     public static int exeGet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         if (DDVGamesMod.gameManager.hasGame()) {
             context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.get_game", DDVGamesMod.gameManager.getGame().getName().getString(),
@@ -69,16 +110,25 @@ public class MinigameCommand {
         }
         return 1;
     }
+
     public static int exeStart(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        DDVGamesMod.gameManager.startGame();
-        Minigame game = DDVGamesMod.gameManager.getGame();
-        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.start_game", game.getName().getString()), true);
-        return 1;
+        if (DDVGamesMod.gameManager.isGameRunning()) {
+            throw ALREADY_RUNNING.create();
+        }
+
+        if (DDVGamesMod.gameManager.getGame().canStart(DDVGamesMod.gameManager.getPlayers())) {
+            DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());
+            Minigame game = DDVGamesMod.gameManager.getGame();
+            context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.start_game", game.getName().getString()), true);
+            return 1;
+        } else {
+            throw CANNOT_START.create();
+        }
     }
     public static int exeStop(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         if (DDVGamesMod.gameManager.isGameRunning()) {
             context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.stop_game", DDVGamesMod.gameManager.getGame().getName()), true);
-            DDVGamesMod.gameManager.stopGame();
+            DDVGamesMod.gameManager.stopGame(context.getSource().getWorld());
             return 1;
         } else {
             throw NOT_RUNNING.create();
@@ -102,7 +152,6 @@ public class MinigameCommand {
         }
 
     }
-
     public static int exeGetSettingVal(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         if (DDVGamesMod.gameManager.hasGame()) {
             Setting setting = SettingArgType.getSetting(context, "setting");
@@ -115,5 +164,89 @@ public class MinigameCommand {
     }
 
 
+    public static int exeAddPlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
+        players.removeIf(player -> DDVGamesMod.gameManager.getPlayers().contains(player));
+        DDVGamesMod.gameManager.addPlayers(players);
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.added_players"), true);
+        return 1;
+    }
+
+    public static int exeRemovePlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
+        players.removeIf(player -> !DDVGamesMod.gameManager.getPlayers().contains(player));
+        players.forEach(player -> DDVGamesMod.gameManager.detachRole(player));
+        DDVGamesMod.gameManager.removePlayers(players);
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.removed_players"), true);
+        return 1;
+    }
+
+    public static int exeRemoveAll(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        DDVGamesMod.gameManager.getPlayers().forEach(player -> DDVGamesMod.gameManager.detachRole(player));
+        DDVGamesMod.gameManager.getPlayers().clear();
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.cleared_players"), true);
+        return 1;
+    }
+
+    public static int exeGetPlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        int playerCount = 0;
+        StringBuilder playerNames = new StringBuilder();
+        String splitter = ", ";
+
+
+        for (PlayerEntity player : DDVGamesMod.gameManager.getPlayers()) {
+            playerCount++;
+            String thisName = player.getGameProfile().getName();
+            playerNames.append(thisName);
+            if (DDVGamesMod.gameManager.getPlayers().size() > playerCount) {
+                playerNames.append(splitter);
+            }
+        }
+
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.get_players", playerCount, playerNames.toString()), true);
+        return 1;
+    }
+
+
+    public static int exeGetPlayersInRole(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Role role = RoleArgType.getRole(context, "role");
+
+        int playerCount = 0;
+        StringBuilder playerNames = new StringBuilder();
+        String splitter = ", ";
+        Collection<PlayerEntity> players = DDVGamesMod.gameManager.getPlayers();
+
+        players.removeIf(player -> !Objects.equals(DDVGamesEntityComponents.getRole(player).getName(), role.getName()));
+
+
+        for (PlayerEntity player : players) {
+            playerCount++;
+            String thisName = player.getGameProfile().getName();
+            playerNames.append(thisName);
+            if (players.size() > playerCount) {
+                playerNames.append(splitter);
+            }
+        }
+
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.get_players_role", playerCount, role.getName(), playerNames.toString()), true);
+        return 1;
+    }
+
+    public static int exeAddPlayersRole(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
+        Role role = RoleArgType.getRole(context, "role");
+
+        players.forEach(player -> DDVGamesMod.gameManager.attachRole(player, role));
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.add_players_role", role.getName()), true);
+        return 1;
+    }
+
+    public static int exeRemovePlayersRole(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
+
+        players.forEach(player -> DDVGamesMod.gameManager.detachRole(player));
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.remove_players_role"), true);
+        return 1;
+    }
 
 }

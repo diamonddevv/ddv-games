@@ -5,9 +5,17 @@
   "ddv.command.feedback.get_game": "Minigame currently set to: %s %s",
   "ddv.command.feedback.get_game_none": "No minigame is currently set!",
   "ddv.command.feedback.getSettingVal": "Setting %s is currently set to: %s",
-  "ddv.command.feedback.setSettingVal": "Set Setting %s to: %s",
+  "ddv.command.feedback.setSettingVal": "Set setting %s to: %s",
   "ddv.command.feedback.start_game": "Started minigame %s!",
   "ddv.command.feedback.stop_game": "Stopped minigame %s.",
+  "ddv.command.feedback.added_players": "Added Players Successfully.",
+  "ddv.command.feedback.removed_players": "Removed Players Successfully.",
+  "ddv.command.feedback.cleared_players": "Cleared Players Successfully.",
+  "ddv.command.feedback.get_players": "There are %s player(s) currently in the minigame: %s",
+  "ddv.command.feedback.get_players_role": "There are %s player(s) currently with role %s: %s",
+  "ddv.command.feedback.add_players_role": "Added role %s to player(s) successfully",
+  "ddv.command.feedback.remove_players_role": "Removed player(s) from all roles.",
+
 
   "ddv.command.exception.invalid_game": "The minigame %s could not be found!",
   "ddv.command.exception.invalid_setting": "The setting %s could not be found!",
@@ -15,6 +23,8 @@
   "ddv.command.exception.running": "Couldn't edit minigame settings (Minigame is running)",
   "ddv.command.exception.running_set": "Couldn't set minigame (Minigame is running)",
   "ddv.command.exception.no_game": "Couldn't edit minigame settings (No minigame is selected)",
+  "ddv.command.exception.cannot_start": "The minigame could not start - Starting conditions were not met.",
+  "ddv.command.exception.already_running": "The minigame could not start - A minigame is already running!",
 
   "ddv.semanticVersioning.prefix": "v",
   "ddv.semanticVersioning.suffixes.none": "",

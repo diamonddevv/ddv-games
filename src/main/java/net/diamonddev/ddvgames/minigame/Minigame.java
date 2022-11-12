@@ -2,9 +2,11 @@ package net.diamonddev.ddvgames.minigame;
 
 
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,25 +43,26 @@ public abstract class Minigame {
     public abstract ArrayList<Role> addRoles(ArrayList<Role> roles);
     public abstract ArrayList<Setting> addSettings(ArrayList<Setting> settings);
 
-    public abstract void onStart(); // todo: pass in: players (?), world
-    public abstract void onEnd();
+    public abstract void onStart(Entity executor, Collection<PlayerEntity> players, World world);
+    public abstract void onEnd(Collection<PlayerEntity> players, World world);
 
     public ArrayList<Setting> getSettings() {return this.settings;}
+    public ArrayList<Role> getRoles() {return this.roles;}
     public boolean canStart(Collection<PlayerEntity> players) {
         return players.size() > 1;
     }
 
-    public void start(Collection<PlayerEntity> players) {
+    public void start(Entity executor, Collection<PlayerEntity> players, World world) {
         if (this.canStart(players)) {
             this.winner = null;
             this.running = true;
-            this.onStart();
+            this.onStart(executor, players, world);
         }
     }
-    public void end() {
+    public void end(Collection<PlayerEntity> players, World world) {
         if (this.isRunning()) {
             this.running = false;
-            this.onEnd();
+            this.onEnd(players, world);
         }
     }
 
