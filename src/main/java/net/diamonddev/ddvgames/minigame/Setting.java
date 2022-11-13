@@ -28,8 +28,11 @@ public class Setting {
     public static boolean parseAsBoolean(String simpleName) {
         return DDVGamesMod.gameManager.getSetting(simpleName) > 0.0;
     }
-
     public static double parseAsDouble(String simpleName) {
         return DDVGamesMod.gameManager.getSetting(simpleName);
+    }
+
+    public static int parseAsInt(String simpleName) {
+        return (int) parseAsDouble(simpleName);
     }
 }

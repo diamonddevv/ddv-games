@@ -16,6 +16,8 @@
   "ddv.command.feedback.add_players_role": "Added role %s to player(s) successfully",
   "ddv.command.feedback.remove_players_role": "Removed player(s) from all roles.",
 
+  "ddv.minigame.start.unsupportedDimension": "Playing Minigames outside of the Overworld is not guaranteed to work. This may be supported in the future, but for now I recommend staying in the Overworld.",
+
 
   "ddv.command.exception.invalid_game": "The minigame %s could not be found!",
   "ddv.command.exception.invalid_setting": "The setting %s could not be found!",

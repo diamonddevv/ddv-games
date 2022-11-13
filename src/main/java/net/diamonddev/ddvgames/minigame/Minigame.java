@@ -1,6 +1,7 @@
 package net.diamonddev.ddvgames.minigame;
 
 
+import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -16,6 +17,7 @@ public abstract class Minigame {
     private final MutableText name;
     private final String version;
     private final SemanticVersioningSuffix verSuffix;
+    private long tickClock;
     private ArrayList<Role> roles;
     private ArrayList<Setting> settings;
     private PlayerEntity winner;
@@ -34,6 +36,8 @@ public abstract class Minigame {
 
         this.version = semanticVersion;
         this.verSuffix = versioningSuffix;
+
+        this.tickClock = 0;
     }
 
     public boolean isRunning() {
@@ -46,6 +50,15 @@ public abstract class Minigame {
     public abstract void onStart(Entity executor, Collection<PlayerEntity> players, World world);
     public abstract void onEnd(Collection<PlayerEntity> players, World world);
 
+    public abstract boolean canWin(PlayerEntity winnerCandidate, Collection<PlayerEntity> players);
+    public abstract void onWin(PlayerEntity winningPlayer);
+
+    public abstract void tickClock();
+
+    public long getTicks(World world) {
+        return world.getTime() - this.tickClock;
+    }
+
     public ArrayList<Setting> getSettings() {return this.settings;}
     public ArrayList<Role> getRoles() {return this.roles;}
     public boolean canStart(Collection<PlayerEntity> players) {
@@ -53,9 +66,15 @@ public abstract class Minigame {
     }
 
     public void start(Entity executor, Collection<PlayerEntity> players, World world) {
+
+        if (world.getRegistryKey() != World.OVERWORLD) {
+            executor.sendMessage(Text.translatable("ddv.minigame.start.unsupportedDimension"));
+        }
+
         if (this.canStart(players)) {
             this.winner = null;
             this.running = true;
+            this.tickClock = 0;
             this.onStart(executor, players, world);
         }
     }
@@ -66,7 +85,17 @@ public abstract class Minigame {
         }
     }
 
+    public void tryWin() {
+        for (PlayerEntity player : DDVGamesMod.gameManager.getPlayers()) {
+            if (canWin(player, DDVGamesMod.gameManager.getPlayers())) {
+                onWin(player);
+            }
+        }
+    }
 
+    public void changeTickClock() {
+        tickClock++;
+    }
     public Text getName() {
         return this.name;
     }
