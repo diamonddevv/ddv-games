@@ -51,12 +51,12 @@ public abstract class Minigame {
     public abstract void onEnd(Collection<PlayerEntity> players, World world);
 
     public abstract boolean canWin(PlayerEntity winnerCandidate, Collection<PlayerEntity> players);
-    public abstract void onWin(PlayerEntity winningPlayer);
+    public abstract void onWin(PlayerEntity winningPlayer, World world, Collection<PlayerEntity> players);
 
     public abstract void tickClock();
 
-    public long getTicks(World world) {
-        return world.getTime() - this.tickClock;
+    public long getTicks() {
+        return this.tickClock;
     }
 
     public ArrayList<Setting> getSettings() {return this.settings;}
@@ -88,7 +88,7 @@ public abstract class Minigame {
     public void tryWin() {
         for (PlayerEntity player : DDVGamesMod.gameManager.getPlayers()) {
             if (canWin(player, DDVGamesMod.gameManager.getPlayers())) {
-                onWin(player);
+                onWin(player, this.winner.world, DDVGamesMod.gameManager.getPlayers());
             }
         }
     }

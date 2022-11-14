@@ -13,13 +13,13 @@ import net.diamonddev.ddvgames.command.argument.SettingArgType;
 import net.diamonddev.ddvgames.minigame.Minigame;
 import net.diamonddev.ddvgames.minigame.Role;
 import net.diamonddev.ddvgames.minigame.Setting;
+import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -59,6 +59,9 @@ public class MinigameCommand {
                         ).then(literal("players")
                                 .then(literal("add")
                                         .then(argument("players", EntityArgumentType.players())
+                                                .then(argument("role", RoleArgType.role())
+                                                        .executes(MinigameCommand::exeAddPlayersWithRole)
+                                                )
                                                 .executes(MinigameCommand::exeAddPlayers)
                                         )
                                 ).then(literal("remove")
@@ -84,6 +87,10 @@ public class MinigameCommand {
                                 ).then(literal("getplayers")
                                         .then(argument("role", RoleArgType.role())
                                                 .executes(MinigameCommand::exeGetPlayersInRole)
+                                        )
+                                ).then(literal("getrole")
+                                        .then(argument("player", EntityArgumentType.player())
+                                                .executes(MinigameCommand::exeGetPlayerRole)
                                         )
                                 )
                         )
@@ -166,12 +173,21 @@ public class MinigameCommand {
 
     public static int exeAddPlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
+        Role role = RoleArgType.getRole(context, "role");
+
+        players.removeIf(player -> DDVGamesMod.gameManager.getPlayers().contains(player));
+        DDVGamesMod.gameManager.addPlayers(players);
+        players.forEach(serverPlayerEntity -> DDVGamesEntityComponents.setRole(serverPlayerEntity, role));
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.added_players"), true);
+        return 1;
+    }
+    public static int exeAddPlayersWithRole(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
         players.removeIf(player -> DDVGamesMod.gameManager.getPlayers().contains(player));
         DDVGamesMod.gameManager.addPlayers(players);
         context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.added_players"), true);
         return 1;
     }
-
     public static int exeRemovePlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
         players.removeIf(player -> !DDVGamesMod.gameManager.getPlayers().contains(player));
@@ -180,14 +196,12 @@ public class MinigameCommand {
         context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.removed_players"), true);
         return 1;
     }
-
     public static int exeRemoveAll(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         DDVGamesMod.gameManager.getPlayers().forEach(player -> DDVGamesMod.gameManager.detachRole(player));
         DDVGamesMod.gameManager.getPlayers().clear();
         context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.cleared_players"), true);
         return 1;
     }
-
     public static int exeGetPlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         int playerCount = 0;
         StringBuilder playerNames = new StringBuilder();
@@ -232,6 +246,20 @@ public class MinigameCommand {
         return 1;
     }
 
+    public static int exeGetPlayerRole(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        PlayerEntity player = EntityArgumentType.getPlayer(context, "player");
+        Role role = DDVGamesEntityComponents.getRole(player);
+
+        if (Objects.equals(role.getName(), "")) {
+            context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.player_has_no_role",
+                    player.getGameProfile().getName()), false);
+            return 1;
+        }
+
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.get_player_role",
+                player.getGameProfile().getName(), role.getName()), false);
+        return 1;
+    }
     public static int exeAddPlayersRole(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
         Role role = RoleArgType.getRole(context, "role");
@@ -240,7 +268,6 @@ public class MinigameCommand {
         context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.add_players_role", role.getName()), true);
         return 1;
     }
-
     public static int exeRemovePlayersRole(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
 

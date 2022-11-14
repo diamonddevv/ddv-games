@@ -1,12 +1,14 @@
 package net.diamonddev.ddvgames.minigame;
 
 import net.diamonddev.ddvgames.DDVGamesMod;
-import net.diamonddev.ddvgames.util.PlayerUtil;
+import net.diamonddev.ddvgames.util.SharedUtil;
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.world.GameMode;
@@ -15,10 +17,9 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
-import static net.diamonddev.ddvgames.minigame.Setting.parseAsBoolean;
-import static net.diamonddev.ddvgames.minigame.Setting.parseAsDouble;
-import static net.diamonddev.ddvgames.minigame.Setting.parseAsInt;
+import static net.diamonddev.ddvgames.minigame.Setting.*;
 
 public class RisingEdgeMinigame extends Minigame {
 
@@ -67,7 +68,7 @@ public class RisingEdgeMinigame extends Minigame {
         world.getWorldBorder().setSize(borderDist);
 
         // Spectators in Spectator Mode
-        roledSpectators.forEach(player -> PlayerUtil.changePlayerGamemode(player, GameMode.SPECTATOR));
+        roledSpectators.forEach(player -> SharedUtil.changePlayerGamemode(player, GameMode.SPECTATOR));
 
         if (glowing) { // Glowing to players, if enabled
             roledPlayers.forEach(player -> player.addStatusEffect(INF_GLOWING_EFFECT_INSTANCE));
@@ -92,14 +93,25 @@ public class RisingEdgeMinigame extends Minigame {
     }
 
     @Override
-    public void onWin(PlayerEntity winningPlayer) {
+    public void onWin(PlayerEntity winningPlayer, World world, Collection<PlayerEntity> players) {
+        players.forEach(player -> {
+            player.sendMessage(Text.translatable("ddv.minigame.rising_edge.win_title", winningPlayer.getGameProfile().getName()), true);
+        });
 
+        ServerWorld serverWorld = null;
+        try { serverWorld = Objects.requireNonNull(world.getServer()).getWorld(winningPlayer.getWorld().getRegistryKey());
+        } catch (Exception ignored) {}
+
+        if (serverWorld != null) {
+            SharedUtil.spawnParticle(serverWorld, ParticleTypes.TOTEM_OF_UNDYING, winningPlayer.getPos(), SharedUtil.cubeVec(0.5), 5000, 0.5);
+        }
+
+        players.forEach(player -> player.getInventory().clear());
     }
 
-    // TICK CLOCK
     @Override
-    public void tickClock() {
-
+    public void tickClock() { // TICK CLOCK
+        System.out.println("Tick: " + this.getTicks());
     }
 
     @Override

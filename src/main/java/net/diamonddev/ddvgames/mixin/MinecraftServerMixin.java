@@ -42,7 +42,8 @@ public abstract class MinecraftServerMixin {
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void ddvg$runMinigameTickClock(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
-        for (Minigame minigame : InitRegistries.MINIGAMES) {
+        if (DDVGamesMod.gameManager.isGameRunning()) {
+            Minigame minigame = DDVGamesMod.gameManager.getGame();
             minigame.tryWin();
             minigame.tickClock();
             minigame.changeTickClock();

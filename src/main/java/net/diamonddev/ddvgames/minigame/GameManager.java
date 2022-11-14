@@ -98,8 +98,8 @@ public class GameManager {
     }
 
     public void attachRole(PlayerEntity player, Role role) {
+        detachRole(player);
         DDVGamesEntityComponents.setRole(player, role);
-
     }
 
     public void detachRole(PlayerEntity player) {
