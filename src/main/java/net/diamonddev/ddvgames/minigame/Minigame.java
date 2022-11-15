@@ -17,12 +17,14 @@ public abstract class Minigame {
     private final MutableText name;
     private final String version;
     private final SemanticVersioningSuffix verSuffix;
+    private ArrayList<GameState> states;
     private long tickClock;
     private ArrayList<Role> roles;
     private ArrayList<Setting> settings;
     private PlayerEntity winner;
     private boolean running;
-
+    public GameState currentState;
+    public GameState previousState;
     protected Minigame(MutableText name, String semanticVersion, SemanticVersioningSuffix versioningSuffix) {
         this.running = false;
         this.name = name;
@@ -31,8 +33,10 @@ public abstract class Minigame {
 
         this.settings = new ArrayList<>();
         this.roles = new ArrayList<>();
+        this.states = new ArrayList<>();
         this.settings = addSettings(this.settings);
         this.roles = addRoles(this.roles);
+        this.states = addGameStates(this.states);
 
         this.version = semanticVersion;
         this.verSuffix = versioningSuffix;
@@ -47,13 +51,14 @@ public abstract class Minigame {
     public abstract ArrayList<Role> addRoles(ArrayList<Role> roles);
     public abstract ArrayList<Setting> addSettings(ArrayList<Setting> settings);
 
+    public abstract ArrayList<GameState> addGameStates(ArrayList<GameState> states);
     public abstract void onStart(Entity executor, Collection<PlayerEntity> players, World world);
     public abstract void onEnd(Collection<PlayerEntity> players, World world);
 
     public abstract boolean canWin(PlayerEntity winnerCandidate, Collection<PlayerEntity> players);
     public abstract void onWin(PlayerEntity winningPlayer, World world, Collection<PlayerEntity> players);
 
-    public abstract void tickClock();
+    public abstract void tickClock(World world);
 
     public long getTicks() {
         return this.tickClock;
@@ -61,6 +66,11 @@ public abstract class Minigame {
 
     public ArrayList<Setting> getSettings() {return this.settings;}
     public ArrayList<Role> getRoles() {return this.roles;}
+
+    public ArrayList<GameState> getStates() {
+        return states;
+    }
+
     public boolean canStart(Collection<PlayerEntity> players) {
         return players.size() > 1;
     }
@@ -74,8 +84,10 @@ public abstract class Minigame {
         if (this.canStart(players)) {
             this.winner = null;
             this.running = true;
+            this.currentState = GameState.fromName(getStartingStateName());
             this.tickClock = 0;
             this.onStart(executor, players, world);
+            DDVGamesMod.gameManager.switchState(currentState, world);
         }
     }
     public void end(Collection<PlayerEntity> players, World world) {
@@ -89,9 +101,20 @@ public abstract class Minigame {
         for (PlayerEntity player : DDVGamesMod.gameManager.getPlayers()) {
             if (canWin(player, DDVGamesMod.gameManager.getPlayers())) {
                 onWin(player, this.winner.world, DDVGamesMod.gameManager.getPlayers());
+                this.winner = player;
             }
         }
     }
+
+    public PlayerEntity getWinner() {
+        return winner;
+    }
+
+    public abstract String getDefaultRoleName();
+    public abstract String getStartingStateName();
+
+    public abstract void onStateStarts(GameState state, World world);
+    public abstract void onStateEnds(GameState state, World world);
 
     public void changeTickClock() {
         tickClock++;

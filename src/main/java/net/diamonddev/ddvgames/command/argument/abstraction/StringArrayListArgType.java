@@ -1,4 +1,4 @@
-package net.diamonddev.ddvgames.command.argument;
+package net.diamonddev.ddvgames.command.argument.abstraction;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;

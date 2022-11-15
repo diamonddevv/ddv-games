@@ -7,9 +7,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
+import net.diamonddev.ddvgames.command.argument.GameStateArgType;
 import net.diamonddev.ddvgames.command.argument.MinigameArgType;
 import net.diamonddev.ddvgames.command.argument.RoleArgType;
 import net.diamonddev.ddvgames.command.argument.SettingArgType;
+import net.diamonddev.ddvgames.minigame.GameState;
 import net.diamonddev.ddvgames.minigame.Minigame;
 import net.diamonddev.ddvgames.minigame.Role;
 import net.diamonddev.ddvgames.minigame.Setting;
@@ -39,12 +41,16 @@ public class MinigameCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("minigame").requires(source -> source.hasPermissionLevel(2)
-                        ).then(literal("set")
+                        ).then(literal("load")
                                 .then(argument("minigame", MinigameArgType.minigame())
                                         .executes(MinigameCommand::exeSet)
                                 )
                         ).then(literal("start")
-                                .executes(MinigameCommand::exeStart)
+                                .then(literal("quick")
+                                        .then(argument("minigame", MinigameArgType.minigame())
+                                                .executes(MinigameCommand::exeQuickStart)
+                                        )
+                                ).executes(MinigameCommand::exeStart)
                         ).then(literal("stop")
                                 .executes(MinigameCommand::exeStop)
                         ).then(literal("settings")
@@ -93,11 +99,15 @@ public class MinigameCommand {
                                                 .executes(MinigameCommand::exeGetPlayerRole)
                                         )
                                 )
+                        ).then(literal("states")
+                                .then(literal("jump")
+                                        .then(argument("state", GameStateArgType.gamestate())
+                                                .executes(MinigameCommand::exeJumpToState)
+                                        )
+                                )
                         )
         );
     }
-
-
     public static int exeSet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         if (!DDVGamesMod.gameManager.isGameRunning()) {
             Minigame game = MinigameArgType.getMinigame(context, "minigame");
@@ -131,6 +141,22 @@ public class MinigameCommand {
         } else {
             throw CANNOT_START.create();
         }
+    }
+
+    public static int exeQuickStart(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        if (DDVGamesMod.gameManager.isGameRunning()) {
+            throw ALREADY_RUNNING.create();
+        }
+
+        Minigame game = MinigameArgType.getMinigame(context, "minigame");
+
+        DDVGamesMod.gameManager.setGame(game);
+        DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
+
+        DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());
+
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.quickstart_game", game.getName().getString(), game.getSemanticVersion().getString()), true);
+        return 1;
     }
     public static int exeStop(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         if (DDVGamesMod.gameManager.isGameRunning()) {
@@ -171,20 +197,20 @@ public class MinigameCommand {
     }
 
 
-    public static int exeAddPlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    public static int exeAddPlayersWithRole(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
         Role role = RoleArgType.getRole(context, "role");
 
         players.removeIf(player -> DDVGamesMod.gameManager.getPlayers().contains(player));
-        DDVGamesMod.gameManager.addPlayers(players);
-        players.forEach(serverPlayerEntity -> DDVGamesEntityComponents.setRole(serverPlayerEntity, role));
+        DDVGamesMod.gameManager.addPlayersWithRole(players, role);
         context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.added_players"), true);
         return 1;
     }
-    public static int exeAddPlayersWithRole(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    public static int exeAddPlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "players");
         players.removeIf(player -> DDVGamesMod.gameManager.getPlayers().contains(player));
         DDVGamesMod.gameManager.addPlayers(players);
+        players.forEach(serverPlayerEntity -> DDVGamesMod.gameManager.attachRole(serverPlayerEntity, DDVGamesMod.gameManager.getDefaultRole()));
         context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.added_players"), true);
         return 1;
     }
@@ -273,6 +299,15 @@ public class MinigameCommand {
 
         players.forEach(player -> DDVGamesMod.gameManager.detachRole(player));
         context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.remove_players_role"), true);
+        return 1;
+    }
+
+
+    public static int exeJumpToState(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        GameState state = GameStateArgType.getState(context, "state");
+
+        DDVGamesMod.gameManager.switchState(state, context.getSource().getWorld());
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.jumpState"), true);
         return 1;
     }
 

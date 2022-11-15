@@ -1,4 +1,4 @@
-package net.diamonddev.ddvgames.command.argument;
+package net.diamonddev.ddvgames.command.argument.abstraction;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;

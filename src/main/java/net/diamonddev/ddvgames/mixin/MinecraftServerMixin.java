@@ -44,8 +44,9 @@ public abstract class MinecraftServerMixin {
     public void ddvg$runMinigameTickClock(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
         if (DDVGamesMod.gameManager.isGameRunning()) {
             Minigame minigame = DDVGamesMod.gameManager.getGame();
+            DDVGamesMod.gameManager.tick();
             minigame.tryWin();
-            minigame.tickClock();
+            minigame.tickClock(this.getOverworld());
             minigame.changeTickClock();
         }
     }

@@ -8,6 +8,7 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class GameManager {
 
@@ -15,9 +16,13 @@ public class GameManager {
 
     private Collection<Setting> settings;
     private Collection<Role> roles;
+    private Collection<GameState> states;
     private Minigame game;
     private Collection<PlayerEntity> players;
     public PlayerEntity winner;
+
+    public GameState currentState;
+    public GameState previousState;
 
     private GameManager() {
         this.game = null;
@@ -25,7 +30,9 @@ public class GameManager {
         this.winner = null;
         this.settings = new ArrayList<>();
         this.roles = new ArrayList<>();
+        this.states = new ArrayList<>();
     }
+
     public static GameManager getGameManager() {
         if (manager == null) {
             manager = new GameManager();
@@ -41,6 +48,7 @@ public class GameManager {
         }
         return false;
     }
+
     public boolean isGameRunning(Minigame game) {
         if (this.game != null && game != null) {
             if (this.game == game) {
@@ -49,11 +57,13 @@ public class GameManager {
         }
         return false;
     }
+
     public void startGame(Entity executor, World world) {
         if (game != null) {
             game.start(executor, this.players, world);
         }
     }
+
     public void stopGame(World world) {
         if (game.isRunning()) {
             game.end(this.players, world);
@@ -65,7 +75,12 @@ public class GameManager {
             this.game = game;
             addGameSettingsToList(game.getSettings());
             addGameRolesToList(game.getRoles());
+            addGameStatesToList(game.getStates());
         }
+    }
+
+    public void tick() {
+        this.winner = this.hasGame() ? this.getGame().getWinner() : null;
     }
 
     public boolean hasGame() {
@@ -75,9 +90,15 @@ public class GameManager {
     private void addGameSettingsToList(ArrayList<Setting> gameSettings) {
         this.settings = gameSettings;
     }
+
     private void addGameRolesToList(ArrayList<Role> gameRoles) {
         this.roles = gameRoles;
     }
+
+    private void addGameStatesToList(ArrayList<GameState> gameStates) {
+        this.states = gameStates;
+    }
+
     public Minigame getGame() {
         return this.game;
     }
@@ -85,14 +106,24 @@ public class GameManager {
     public Collection<PlayerEntity> getPlayers() {
         return players;
     }
+
     public Collection<PlayerEntity> getPlayersWithRole(Role role) {
-        players.removeIf(player -> !DDVGamesEntityComponents.getRole(player).getName().matches(role.getName()));
-        return players;
+        return players.stream().filter(player -> !DDVGamesEntityComponents.getRole(player).getName().matches(role.getName())).collect(Collectors.toList());
+    }
+
+    public PlayerEntity getWinner() {
+        return winner;
     }
 
     public void addPlayers(Collection<ServerPlayerEntity> players) {
         this.players.addAll(players);
     }
+
+    public void addPlayersWithRole(Collection<ServerPlayerEntity> players, Role role) {
+        this.players.addAll(players);
+        players.forEach(player -> attachRole(player, role));
+    }
+
     public void removePlayers(Collection<ServerPlayerEntity> players) {
         this.players.removeAll(players);
     }
@@ -105,13 +136,14 @@ public class GameManager {
     public void detachRole(PlayerEntity player) {
         DDVGamesEntityComponents.setRole(player, Role.EMPTY);
     }
-
     public Collection<Setting> getSettings() {
         return settings;
     }
+
     public Collection<Role> getRoles() {
         return roles;
     }
+
     public ArrayList<String> getRolesAsSimpleNames() {
         ArrayList<Role> roles = getGame().getRoles();
         ArrayList<String> simpleNamedRoles = new ArrayList<>();
@@ -139,34 +171,27 @@ public class GameManager {
         }
     }
 
-    @Deprecated
-    public static class GameManagerBuilder {
+    public GameState getCurrentState() {
+        currentState = this.isGameRunning() ? getGame().currentState : null;
+        return currentState;
+    }
 
-        private GameManager manager;
+    public Collection<GameState> getStates() {
+        return states;
+    }
 
-        private GameManagerBuilder() {
-            this.manager = new GameManager();
+    public void switchState(GameState newState, World world) {
+        if (isGameRunning()) {
+            previousState = currentState;
+            currentState = newState;
+            game.onStateStarts(currentState, world);
+            game.onStateEnds(previousState, world);
         }
+    }
 
-        public static GameManagerBuilder start() {
-            return new GameManagerBuilder();
-        }
-
-        public GameManager build() {
-            return this.manager;
-        }
-
-
-        public GameManagerBuilder setGame(Minigame game) {
-            this.manager.setGame(game);
-            return this;
-        }
-
-        public GameManagerBuilder setPlayerList(Collection<PlayerEntity> players) {
-            this.manager.getPlayers().clear();
-            this.manager.getPlayers().addAll(players);
-            return this;
-        }
-
+    public Role getDefaultRole() {
+        if (this.hasGame()) {
+            return Role.fromName(this.game.getDefaultRoleName());
+        } else return Role.EMPTY;
     }
 }

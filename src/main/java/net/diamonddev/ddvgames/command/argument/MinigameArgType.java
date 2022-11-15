@@ -3,6 +3,7 @@ package net.diamonddev.ddvgames.command.argument;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import net.diamonddev.ddvgames.command.argument.abstraction.RegistryArgType;
 import net.diamonddev.ddvgames.minigame.Minigame;
 import net.diamonddev.ddvgames.registry.InitRegistries;
 import net.minecraft.server.command.ServerCommandSource;

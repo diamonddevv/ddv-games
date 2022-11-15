@@ -2,9 +2,11 @@ package net.diamonddev.ddvgames.registry;
 
 import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.command.MinigameCommand;
+import net.diamonddev.ddvgames.command.argument.GameStateArgType;
 import net.diamonddev.ddvgames.command.argument.MinigameArgType;
 import net.diamonddev.ddvgames.command.argument.RoleArgType;
 import net.diamonddev.ddvgames.command.argument.SettingArgType;
+import net.diamonddev.ddvgames.minigame.GameState;
 import net.diamonddev.libgenetics.common.api.v1.interfaces.RegistryInitializer;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -20,6 +22,8 @@ public class InitCommand implements RegistryInitializer {
                 SettingArgType.class, ConstantArgumentSerializer.of(SettingArgType::setting));
         ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id.build("role_command_arg"),
                 RoleArgType.class, ConstantArgumentSerializer.of(RoleArgType::role));
+        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id.build("gamestate_command_arg"),
+                GameStateArgType.class, ConstantArgumentSerializer.of(GameStateArgType::gamestate));
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             // Register Commands Here
