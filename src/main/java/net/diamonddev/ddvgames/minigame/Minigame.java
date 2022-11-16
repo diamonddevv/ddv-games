@@ -79,6 +79,7 @@ public abstract class Minigame {
 
         if (world.getRegistryKey() != World.OVERWORLD) {
             executor.sendMessage(Text.translatable("ddv.minigame.start.unsupportedDimension"));
+            return;
         }
 
         if (this.canStart(players)) {
@@ -97,11 +98,15 @@ public abstract class Minigame {
         }
     }
 
-    public void tryWin() {
-        for (PlayerEntity player : DDVGamesMod.gameManager.getPlayers()) {
-            if (canWin(player, DDVGamesMod.gameManager.getPlayers())) {
-                onWin(player, this.winner.world, DDVGamesMod.gameManager.getPlayers());
-                this.winner = player;
+    public void tryWin(World world) {
+        if (this.isRunning()) {
+            for (PlayerEntity player : DDVGamesMod.gameManager.getPlayers()) {
+                if (canWin(player, DDVGamesMod.gameManager.getPlayers())) {
+                    this.winner = player;
+                    onWin(player, this.winner.world, DDVGamesMod.gameManager.getPlayers());
+                    end(DDVGamesMod.gameManager.getPlayers(), world);
+                    this.running = false;
+                }
             }
         }
     }

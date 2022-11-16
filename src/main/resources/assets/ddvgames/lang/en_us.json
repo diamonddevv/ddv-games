@@ -1,6 +1,10 @@
 {
   "ddv.minigame.rising_edge": "Rising Edge",
   "ddv.minigame.rising_edge.win_title": "%s has won!",
+  "ddv.minigame.rising_edge.rise": "The void rises...",
+  "ddv.minigame.rising_edge.rise_milestone": "The void has risen to Y: %s...",
+  "ddv.minigame.rising_edge.pvp_enabled": "PVP has enabled.. May the odds be ever in your favour.",
+  "ddv.minigame.rising_edge.warmup_start": "Warmup has Started! Good luck, you might need it..",
 
   "ddv.command.feedback.set_game": "Loaded Minigame: %s %s",
   "ddv.command.feedback.get_game": "Minigame currently loaded: %s %s",
@@ -20,7 +24,7 @@
   "ddv.command.feedback.add_players_role": "Added role '%s' to player(s) successfully",
   "ddv.command.feedback.remove_players_role": "Removed player(s) from all roles.",
 
-  "ddv.minigame.start.unsupportedDimension": "Playing Minigames outside of the Overworld is not guaranteed to work. This may be supported in the future, but for now I recommend staying in the Overworld.",
+  "ddv.minigame.start.unsupportedDimension": "Minigames do not currently work outside the Overworld, sorry!",
 
   "ddv.command.exception.invalid_game": "The minigame %s could not be found!",
   "ddv.command.exception.invalid_setting": "The setting '%s' could not be found!",

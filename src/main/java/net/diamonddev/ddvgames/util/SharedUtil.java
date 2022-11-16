@@ -6,6 +6,7 @@ import net.minecraft.particle.ParticleEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
@@ -30,7 +31,14 @@ public class SharedUtil {
     }
 
     public static Quadrilateral createQuad(double radius, Vec2f center) {
-        return new Quadrilateral(center.add((float)radius * 2), center);
+        double sqrhyp = getSquareHyp(radius);
+        Vec2f cornerA = center.add((float) sqrhyp);
+        Vec2f cornerB = center.add((float) -sqrhyp);
+        return new Quadrilateral(cornerA, cornerB);
+    }
+
+    public static Box getBoxFromQuad(Quadrilateral quad, double base, double height) {
+        return new Box(xzVec2fToVec3d(quad.getCornerA(), (float)base), xzVec2fToVec3d(quad.getCornerB(), (float)height));
     }
 
     public static Vec2f vec2fPow(Vec2f input, float raise) {
@@ -38,5 +46,9 @@ public class SharedUtil {
     }
     public static Vec3d xzVec2fToVec3d(Vec2f vec, float y) {
         return new Vec3d(vec.x, y, vec.y);
+    }
+
+    public static double getSquareHyp(double length) {
+        return Math.sqrt((Math.pow(length, 2.0))*2);
     }
 }

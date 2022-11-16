@@ -1,6 +1,7 @@
 package net.diamonddev.ddvgames.minigame;
 
 import net.diamonddev.ddvgames.DDVGamesMod;
+import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.registry.InitRules;
 import net.diamonddev.ddvgames.math.Quadrilateral;
 import net.diamonddev.ddvgames.util.SharedUtil;
@@ -8,21 +9,26 @@ import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
 
 import static net.diamonddev.ddvgames.minigame.Setting.*;
 
@@ -35,11 +41,11 @@ public class RisingEdgeMinigame extends Minigame {
     private static final String WARMUP_SECONDS = "warmupSeconds";
     private static final String RISE_INTERVAL = "riseInterval";
 
-    private static final String SPECTATOR = "spectator";
-    private static final String PLAYER = "player";
+    public static final String SPECTATOR = "spectator";
+    public static final String PLAYER = "player";
 
-    private static final String WARMUP = "warmup";
-    private static final String PVP = "pvp";
+    public static final String WARMUP = "warmup";
+    public static final String PVP = "pvp";
 
     private double previousBorderSize = 0.0;
     private Vec2f previousCenter = new Vec2f(0.0f, 0.0f);
@@ -51,7 +57,7 @@ public class RisingEdgeMinigame extends Minigame {
     public Vec2f center;
     public double voidLevel = 0.0;
     private double borderRadius;
-
+    private final int[] elevationMilestones = new int[] {-32, -16, 0, 16, 64, 128};
     public RisingEdgeMinigame() {
         super(Text.translatable("ddv.minigame.rising_edge"), "0.0.1", SemanticVersioningSuffix.TEST);
     }
@@ -98,7 +104,7 @@ public class RisingEdgeMinigame extends Minigame {
 
         this.center = new Vec2f((float) executor.getX(), (float) executor.getY());
 
-        world.getWorldBorder().setCenter(executor.getX(), executor.getZ());
+        world.getWorldBorder().setCenter(Math.round(executor.getX()), Math.round(executor.getZ()));
         world.getWorldBorder().setSize(borderDist);
 
         players.forEach(player -> player.teleport(executor.getX(), executor.getY(), executor.getZ()));
@@ -123,9 +129,9 @@ public class RisingEdgeMinigame extends Minigame {
 
     @Override
     public boolean canWin(PlayerEntity winnerCandidate, Collection<PlayerEntity> players) {
-        players.removeIf(player -> DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(SPECTATOR)).contains(player));
-        players.remove(winnerCandidate);
-        return players.stream().allMatch(PlayerEntity::isDead);
+        Collection<PlayerEntity> cpe = DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER));
+        cpe.remove(winnerCandidate);
+        return cpe.isEmpty();
     }
 
     @Override
@@ -140,6 +146,11 @@ public class RisingEdgeMinigame extends Minigame {
 
         if (serverWorld != null) {
             SharedUtil.spawnParticle(serverWorld, ParticleTypes.TOTEM_OF_UNDYING, winningPlayer.getPos(), SharedUtil.cubeVec(0.5), 5000, 0.5);
+            serverWorld.playSound(
+                    null,
+                    winningPlayer.getX(), winningPlayer.getY(), winningPlayer.getZ(),
+                    SoundEvents.MUSIC_DISC_PIGSTEP, SoundCategory.MUSIC,
+                    20.0f, 2.0f);
         }
 
         players.forEach(player -> player.getInventory().clear());
@@ -158,19 +169,10 @@ public class RisingEdgeMinigame extends Minigame {
 
         if (this.getTicks() % ascensionInterval == 0) {
             voidLevel += 1.0;
+            voidRise(world, DDVGamesMod.gameManager.getPlayers());
         }
 
-        Quadrilateral quad = SharedUtil.createQuad(this.borderRadius, this.center);
-        BlockPos.iterate(new BlockPos(SharedUtil.xzVec2fToVec3d(quad.getCornerA(), (float) this.voidLevel)),
-                        new BlockPos(SharedUtil.xzVec2fToVec3d(quad.getCornerB(), (float) this.voidLevel)))
-                .iterator().forEachRemaining(blockPos -> {
-                    if (!world.getBlockState(blockPos).isAir()) {
-                        world.setBlockState(blockPos, Blocks.AIR.getDefaultState());
-                    }
-                });
-
-
-        System.out.println(this.getTicks() + " - TICKS | SECONDS - " + this.getTicks() / 20);
+        killFallingGravityBlocksBeneathVoid(world);
     }
 
     @Override
@@ -198,18 +200,64 @@ public class RisingEdgeMinigame extends Minigame {
             warmup.get(GameRules.KEEP_INVENTORY).set(true, world.getServer());
             warmup.get(GameRules.DO_IMMEDIATE_RESPAWN).set(true, world.getServer());
 
-            DDVGamesMod.gameManager.getPlayers().forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.warmupStart")));
+            DDVGamesMod.gameManager.getPlayers().forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.warmup_start")));
 
         } else if (state.getName().matches(PVP)) {
             GameRules pvp = new GameRules();
             pvp.get(InitRules.PVP).set(true, world.getServer());
             pvp.get(GameRules.NATURAL_REGENERATION).set(parseAsBoolean(HEALING), world.getServer());
 
-            DDVGamesMod.gameManager.getPlayers().forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.pvpStart")));
+            this.enablePvp(DDVGamesMod.gameManager.getPlayers());
         }
     }
 
     @Override
     public void onStateEnds(GameState state, World world) {
+    }
+
+    private void voidRise(World world, Collection<PlayerEntity> players) {
+        // Block Deletion
+        Quadrilateral quad = SharedUtil.createQuad(this.borderRadius, this.center);
+        BlockPos.iterate(new BlockPos(SharedUtil.xzVec2fToVec3d(quad.getCornerA(), (float) this.voidLevel)),
+                        new BlockPos(SharedUtil.xzVec2fToVec3d(quad.getCornerB(), (float) this.voidLevel)))
+                .iterator().forEachRemaining(blockPos -> {
+                    if (!world.getBlockState(blockPos).isAir()) {
+                        world.setBlockState(blockPos, Blocks.AIR.getDefaultState());
+                    }
+                });
+
+        // Play Sound
+        world.playSound(
+                this.center.x, this.voidLevel, this.center.y,
+                SoundEvents.ENTITY_EVOKER_FANGS_ATTACK,
+                SoundCategory.NEUTRAL,
+                20.0f,
+                1.0f,
+                true
+        );
+
+        // Inform Players
+        if (Arrays.stream(this.elevationMilestones).anyMatch(value -> value == this.voidLevel)) {
+            players.forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.rise_milestone", this.voidLevel)));
+        } else {
+            players.forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.rise")));
+        }
+
+
+        // I removed the particle effect from the datapack version, it probably would cause too much lag on top of the mass block replacing
+    }
+
+    private void killFallingGravityBlocksBeneathVoid(World world) {
+        Quadrilateral rise = SharedUtil.createQuad(borderRadius, this.center);
+        List<FallingBlockEntity> entities = world.getEntitiesByClass(FallingBlockEntity.class,
+                SharedUtil.getBoxFromQuad(rise, world.getBottomY(), this.voidLevel), entity -> true);
+        entities.forEach(Entity::kill);
+    }
+
+    private void enablePvp(Collection<PlayerEntity> players) {
+        players.forEach(player -> {
+            player.sendMessage(Text.translatable("ddv.minigame.rising_edge.pvp_enabled"), true);
+            player.playSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, 10.0f, 0.5f);
+        });
     }
 }
