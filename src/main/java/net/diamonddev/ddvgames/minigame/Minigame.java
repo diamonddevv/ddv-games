@@ -121,6 +121,9 @@ public abstract class Minigame {
     public abstract void onStateStarts(GameState state, World world);
     public abstract void onStateEnds(GameState state, World world);
 
+    public void togglePause() {
+        this.running = !this.running;
+    }
     public void changeTickClock() {
         tickClock++;
     }

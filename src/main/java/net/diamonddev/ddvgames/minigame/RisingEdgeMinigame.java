@@ -2,14 +2,12 @@ package net.diamonddev.ddvgames.minigame;
 
 import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
+import net.diamonddev.ddvgames.math.Cube;
 import net.diamonddev.ddvgames.registry.InitRules;
-import net.diamonddev.ddvgames.math.Quadrilateral;
 import net.diamonddev.ddvgames.util.SharedUtil;
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
-import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -17,13 +15,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
@@ -56,10 +53,11 @@ public class RisingEdgeMinigame extends Minigame {
 
     public Vec2f center;
     public double voidLevel = 0.0;
+    private Vec3d previousSpawn; // todo: set
     private double borderRadius;
     private final int[] elevationMilestones = new int[] {-32, -16, 0, 16, 64, 128};
     public RisingEdgeMinigame() {
-        super(Text.translatable("ddv.minigame.rising_edge"), "0.0.1", SemanticVersioningSuffix.TEST);
+        super(Text.translatable("ddv.minigame.rising_edge"), "0.0.1", SemanticVersioningSuffix.ALPHA);
     }
 
     @Override
@@ -91,6 +89,7 @@ public class RisingEdgeMinigame extends Minigame {
     public void onStart(Entity executor, Collection<PlayerEntity> players, World world) {
         double borderDist = parseAsDouble(BORDER_DIST);
         boolean glowing = parseAsBoolean(GLOWING);
+        int lives = parseAsInt(LIVES);
 
         Collection<PlayerEntity> roledPlayers = DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER));
         Collection<PlayerEntity> roledSpectators = DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(SPECTATOR));
@@ -102,7 +101,7 @@ public class RisingEdgeMinigame extends Minigame {
         this.voidLevel = world.getBottomY() - 2;
         this.borderRadius = parseAsDouble(BORDER_DIST) / 2;
 
-        this.center = new Vec2f((float) executor.getX(), (float) executor.getY());
+        this.center = new Vec2f((float) executor.getX(), (float) executor.getZ());
 
         world.getWorldBorder().setCenter(Math.round(executor.getX()), Math.round(executor.getZ()));
         world.getWorldBorder().setSize(borderDist);
@@ -115,6 +114,9 @@ public class RisingEdgeMinigame extends Minigame {
         if (glowing) { // Glowing to players, if enabled
             roledPlayers.forEach(player -> player.addStatusEffect(GLOWING_EFFECT_INSTANCE));
         }
+
+        // Set Lives
+        roledPlayers.forEach(player -> DDVGamesEntityComponents.setLives(player, lives));
 
         // Clear all players inventories
         roledPlayers.forEach(player -> player.getInventory().clear());
@@ -159,7 +161,7 @@ public class RisingEdgeMinigame extends Minigame {
     @Override
     public void tickClock(World world) { // TICK CLOCK
         int warmupLength = parseAsInt(WARMUP_SECONDS) * 20;
-        int ascensionInterval = parseAsInt(RISE_INTERVAL);
+        int ascensionInterval = parseAsInt(RISE_INTERVAL) * 20;
 
         if (this.getTicks() % 20 == 0) { // For-each Second Recursion Loop
             if (this.getTicks() / 20 == warmupLength) {
@@ -173,6 +175,7 @@ public class RisingEdgeMinigame extends Minigame {
         }
 
         killFallingGravityBlocksBeneathVoid(world);
+
     }
 
     @Override
@@ -216,31 +219,32 @@ public class RisingEdgeMinigame extends Minigame {
     }
 
     private void voidRise(World world, Collection<PlayerEntity> players) {
+
         // Block Deletion
-        Quadrilateral quad = SharedUtil.createQuad(this.borderRadius, this.center);
-        BlockPos.iterate(new BlockPos(SharedUtil.xzVec2fToVec3d(quad.getCornerA(), (float) this.voidLevel)),
-                        new BlockPos(SharedUtil.xzVec2fToVec3d(quad.getCornerB(), (float) this.voidLevel)))
-                .iterator().forEachRemaining(blockPos -> {
-                    if (!world.getBlockState(blockPos).isAir()) {
-                        world.setBlockState(blockPos, Blocks.AIR.getDefaultState());
-                    }
-                });
+        Cube cube = SharedUtil.createCube(this.borderRadius, this.center, this.voidLevel, world.getBottomY());
+
+
+        BlockPos.iterate(new BlockPos(cube.getCornerA()), new BlockPos(cube.getCornerB())).forEach(pos -> {
+            if (!world.getBlockState(pos).isAir()) {
+                world.setBlockState(pos, Blocks.AIR.getDefaultState());
+            }
+        });
 
         // Play Sound
-        world.playSound(
-                this.center.x, this.voidLevel, this.center.y,
+        players.forEach(player -> player.playSound(
                 SoundEvents.ENTITY_EVOKER_FANGS_ATTACK,
                 SoundCategory.NEUTRAL,
                 20.0f,
-                1.0f,
-                true
+                1.0f)
         );
+
 
         // Inform Players
         if (Arrays.stream(this.elevationMilestones).anyMatch(value -> value == this.voidLevel)) {
-            players.forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.rise_milestone", this.voidLevel)));
+            // might keep as a permanent thing saying height as overlay and scrap chat message
+            players.forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.rise_milestone", this.voidLevel), true));
         } else {
-            players.forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.rise")));
+            players.forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.rise"), true));
         }
 
 
@@ -248,15 +252,16 @@ public class RisingEdgeMinigame extends Minigame {
     }
 
     private void killFallingGravityBlocksBeneathVoid(World world) {
-        Quadrilateral rise = SharedUtil.createQuad(borderRadius, this.center);
+        Cube rise = SharedUtil.createCube(borderRadius, this.center, this.voidLevel, world.getBottomY());
         List<FallingBlockEntity> entities = world.getEntitiesByClass(FallingBlockEntity.class,
-                SharedUtil.getBoxFromQuad(rise, world.getBottomY(), this.voidLevel), entity -> true);
+                rise, entity -> true);
         entities.forEach(Entity::kill);
     }
 
     private void enablePvp(Collection<PlayerEntity> players) {
         players.forEach(player -> {
-            player.sendMessage(Text.translatable("ddv.minigame.rising_edge.pvp_enabled"), true);
+            SharedUtil.pushPlayerTitle(player, Text.translatable("ddv.minigame.rising_edge.pvp_enabled"));
+            SharedUtil.pushPlayerSubtitle(player, Text.translatable("ddv.minigame.rising_edge.pvp_enabled.sub"));
             player.playSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, 10.0f, 0.5f);
         });
     }

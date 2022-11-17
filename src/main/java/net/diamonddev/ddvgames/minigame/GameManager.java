@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 public class GameManager {
 
     private static GameManager manager;
+    private boolean running;
 
     private Collection<Setting> settings;
     private Collection<Role> roles;
@@ -31,6 +32,7 @@ public class GameManager {
         this.settings = new ArrayList<>();
         this.roles = new ArrayList<>();
         this.states = new ArrayList<>();
+        this.running = false;
     }
 
     public static GameManager getGameManager() {
@@ -60,12 +62,17 @@ public class GameManager {
 
     public void startGame(Entity executor, World world) {
         if (game != null) {
+            this.running = true;
             game.start(executor, this.players, world);
         }
     }
 
+    public boolean getGameHasStarted() {
+        return this.running;
+    }
     public void stopGame(World world) {
         if (game.isRunning()) {
+            this.running = true;
             game.end(this.players, world);
         }
     }
@@ -108,7 +115,7 @@ public class GameManager {
     }
 
     public Collection<PlayerEntity> getPlayersWithRole(Role role) {
-        return players.stream().filter(player -> !DDVGamesEntityComponents.getRole(player).getName().matches(role.getName())).collect(Collectors.toList());
+        return players.stream().filter(player -> DDVGamesEntityComponents.getRole(player).getName().matches(role.getName())).collect(Collectors.toList());
     }
 
     public PlayerEntity getWinner() {

@@ -3,7 +3,8 @@
   "ddv.minigame.rising_edge.win_title": "%s has won!",
   "ddv.minigame.rising_edge.rise": "The void rises...",
   "ddv.minigame.rising_edge.rise_milestone": "The void has risen to Y: %s...",
-  "ddv.minigame.rising_edge.pvp_enabled": "PVP has enabled.. May the odds be ever in your favour.",
+  "ddv.minigame.rising_edge.pvp_enabled": "PVP has enabled",
+  "ddv.minigame.rising_edge.pvp_enabled.sub": "May the odds be ever in your favour.",
   "ddv.minigame.rising_edge.warmup_start": "Warmup has Started! Good luck, you might need it..",
 
   "ddv.command.feedback.set_game": "Loaded Minigame: %s %s",
@@ -23,12 +24,17 @@
   "ddv.command.feedback.player_has_no_role": "Player %s has no role!",
   "ddv.command.feedback.add_players_role": "Added role '%s' to player(s) successfully",
   "ddv.command.feedback.remove_players_role": "Removed player(s) from all roles.",
+  "ddv.command.feedback.paused": "Successfully %s Game.",
+  "ddv.command.feedback.pause": "paused",
+  "ddv.command.feedback.play": "resumed",
+
 
   "ddv.minigame.start.unsupportedDimension": "Minigames do not currently work outside the Overworld, sorry!",
 
   "ddv.command.exception.invalid_game": "The minigame %s could not be found!",
   "ddv.command.exception.invalid_setting": "The setting '%s' could not be found!",
   "ddv.command.exception.not_running": "Couldn't stop minigame (No minigame is running)",
+  "ddv.command.exception.cannot_pause": "Couldn't pause minigame (No minigame is running)",
   "ddv.command.exception.running": "Couldn't edit minigame settings (Minigame is running)",
   "ddv.command.exception.running_set": "Couldn't set minigame (Minigame is running)",
   "ddv.command.exception.no_game": "Couldn't edit minigame settings (No minigame is selected)",

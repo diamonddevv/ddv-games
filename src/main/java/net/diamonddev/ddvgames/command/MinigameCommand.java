@@ -15,7 +15,6 @@ import net.diamonddev.ddvgames.minigame.GameState;
 import net.diamonddev.ddvgames.minigame.Minigame;
 import net.diamonddev.ddvgames.minigame.Role;
 import net.diamonddev.ddvgames.minigame.Setting;
-import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
@@ -30,6 +29,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class MinigameCommand {
 
+    private static final SimpleCommandExceptionType CANNOT_PAUSE = new SimpleCommandExceptionType(Text.translatable("ddv.command.exception.cannot_pause"));
     private static final SimpleCommandExceptionType NOT_RUNNING = new SimpleCommandExceptionType(Text.translatable("ddv.command.exception.not_running"));
     private static final SimpleCommandExceptionType RUNNING = new SimpleCommandExceptionType(Text.translatable("ddv.command.exception.running"));
     private static final SimpleCommandExceptionType RUNNING_SET = new SimpleCommandExceptionType(Text.translatable("ddv.command.exception.running_set"));
@@ -105,6 +105,8 @@ public class MinigameCommand {
                                                 .executes(MinigameCommand::exeJumpToState)
                                         )
                                 )
+                        ).then(literal("togglepause")
+                                .executes(MinigameCommand::exeTogglePause)
                         )
         );
     }
@@ -142,7 +144,6 @@ public class MinigameCommand {
             throw CANNOT_START.create();
         }
     }
-
     public static int exeQuickStart(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         if (DDVGamesMod.gameManager.isGameRunning()) {
             throw ALREADY_RUNNING.create();
@@ -167,6 +168,20 @@ public class MinigameCommand {
             throw NOT_RUNNING.create();
         }
 
+    }
+
+
+    public static int exeTogglePause(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        if (DDVGamesMod.gameManager.getGameHasStarted()) {
+            Minigame game = DDVGamesMod.gameManager.getGame();
+            boolean isPausing = game.isRunning();
+            game.togglePause();
+            Text op = isPausing ? Text.translatable("ddv.command.feedback.pause") : Text.translatable("ddv.command.feedback.play");
+            context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.paused", op.getString()), true);
+            return 1;
+        } else {
+            throw CANNOT_PAUSE.create();
+        }
     }
 
     public static int exeEditSettings(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
