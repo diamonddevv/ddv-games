@@ -13,14 +13,16 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
@@ -35,7 +37,8 @@ public class RisingEdgeMinigame extends Minigame {
     private static final String GLOWING = "giveGlowing";
     private static final String HEALING = "allowHealing";
     private static final String BORDER_DIST = "borderDistance";
-    private static final String WARMUP_SECONDS = "warmupSeconds";
+    private static final String USE_HEIGHT_CONDITION = "warmupHeightCondition";
+    private static final String WARMUP_CONDITION = "warmupCondition";
     private static final String RISE_INTERVAL = "riseInterval";
 
     public static final String SPECTATOR = "spectator";
@@ -47,13 +50,17 @@ public class RisingEdgeMinigame extends Minigame {
     private double previousBorderSize = 0.0;
     private Vec2f previousCenter = new Vec2f(0.0f, 0.0f);
     private GameRules previousRules;
+
     private static final StatusEffectInstance GLOWING_EFFECT_INSTANCE =
             new StatusEffectInstance(StatusEffects.GLOWING, 100000, 1, true, false, false);
 
 
     public Vec2f center;
     public double voidLevel = 0.0;
-    private Vec3d previousSpawn; // todo: set
+    private Vec3d spawnPoint;
+    private double timer = 0.0;
+
+
     private double borderRadius;
     private final int[] elevationMilestones = new int[] {-32, -16, 0, 16, 64, 128};
     public RisingEdgeMinigame() {
@@ -73,7 +80,8 @@ public class RisingEdgeMinigame extends Minigame {
         settings.add(new Setting(0.0, GLOWING));
         settings.add(new Setting(1.0, HEALING));
         settings.add(new Setting(100.0, BORDER_DIST));
-        settings.add(new Setting(600.0, WARMUP_SECONDS));
+        settings.add(new Setting(1.0, USE_HEIGHT_CONDITION));
+        settings.add(new Setting(64.0, WARMUP_CONDITION));
         settings.add(new Setting(3.0, RISE_INTERVAL));
         return settings;
     }
@@ -86,7 +94,7 @@ public class RisingEdgeMinigame extends Minigame {
     }
 
     @Override
-    public void onStart(Entity executor, Collection<PlayerEntity> players, World world) {
+    public void onStart(Entity executor, Collection<PlayerEntity> players, World world) { // todo: possibly hash previous player spawnpoints and restore
         double borderDist = parseAsDouble(BORDER_DIST);
         boolean glowing = parseAsBoolean(GLOWING);
         int lives = parseAsInt(LIVES);
@@ -102,14 +110,28 @@ public class RisingEdgeMinigame extends Minigame {
         this.borderRadius = parseAsDouble(BORDER_DIST) / 2;
 
         this.center = new Vec2f((float) executor.getX(), (float) executor.getZ());
+        this.timer = 0.0;
+
+        // Set players spawns
+        this.spawnPoint = SharedUtil.addY(this.center, executor.getY());
+        players.forEach(player -> {
+            ServerPlayerEntity spe = SharedUtil.getServerPlayer(player, (ServerWorld) world);
+            spe.setSpawnPoint(spe.getWorld().getRegistryKey(), SharedUtil.vecToBlockPos(this.spawnPoint),
+                    0.0f, true, false);
+        });
 
         world.getWorldBorder().setCenter(Math.round(executor.getX()), Math.round(executor.getZ()));
         world.getWorldBorder().setSize(borderDist);
+
+        DDVGamesMod.gameManager.switchState(GameState.fromName(WARMUP), world);
 
         players.forEach(player -> player.teleport(executor.getX(), executor.getY(), executor.getZ()));
 
         // Spectators in Spectator Mode
         roledSpectators.forEach(player -> SharedUtil.changePlayerGamemode(player, GameMode.SPECTATOR));
+
+        // Players in Survival Mode
+        roledPlayers.forEach(player -> SharedUtil.changePlayerGamemode(player, GameMode.SURVIVAL));
 
         if (glowing) { // Glowing to players, if enabled
             roledPlayers.forEach(player -> player.addStatusEffect(GLOWING_EFFECT_INSTANCE));
@@ -124,6 +146,7 @@ public class RisingEdgeMinigame extends Minigame {
 
     @Override
     public void onEnd(Collection<PlayerEntity> players, World world) {
+
         world.getWorldBorder().setCenter(this.previousCenter.x, this.previousCenter.y);
         world.getWorldBorder().setSize(this.previousBorderSize);
         world.getGameRules().setAllValues(this.previousRules, world.getServer());
@@ -138,9 +161,7 @@ public class RisingEdgeMinigame extends Minigame {
 
     @Override
     public void onWin(PlayerEntity winningPlayer, World world, Collection<PlayerEntity> players) {
-        players.forEach(player -> {
-            player.sendMessage(Text.translatable("ddv.minigame.rising_edge.win_title", winningPlayer.getGameProfile().getName()), true);
-        });
+        players.forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.win_title", winningPlayer.getGameProfile().getName()), true));
 
         ServerWorld serverWorld = null;
         try { serverWorld = Objects.requireNonNull(world.getServer()).getWorld(winningPlayer.getWorld().getRegistryKey());
@@ -160,14 +181,26 @@ public class RisingEdgeMinigame extends Minigame {
 
     @Override
     public void tickClock(World world) { // TICK CLOCK
-        int warmupLength = parseAsInt(WARMUP_SECONDS) * 20;
+        boolean heightCondition = parseAsBoolean(USE_HEIGHT_CONDITION);
+        int warmupCondition = heightCondition ? parseAsInt(WARMUP_CONDITION) : parseAsInt(WARMUP_CONDITION) * 20;
         int ascensionInterval = parseAsInt(RISE_INTERVAL) * 20;
 
         if (this.getTicks() % 20 == 0) { // For-each Second Recursion Loop
-            if (this.getTicks() / 20 == warmupLength) {
-                DDVGamesMod.gameManager.switchState(GameState.fromName(PVP), world);
+            if (!heightCondition) {
+                if (this.getTicks() >= warmupCondition) {
+                    DDVGamesMod.gameManager.switchState(GameState.fromName(PVP), world);
+                }
+            } else {
+                if (voidLevel >= warmupCondition) {
+                    DDVGamesMod.gameManager.switchState(GameState.fromName(PVP), world);
+                }
             }
         }
+
+        if (this.getTicks() % 2 == 0) { // For-each Tenth-Second Recursion Loop
+            this.timer += 0.1;
+        }
+
 
         if (this.getTicks() % ascensionInterval == 0) {
             voidLevel += 1.0;
@@ -175,7 +208,6 @@ public class RisingEdgeMinigame extends Minigame {
         }
 
         killFallingGravityBlocksBeneathVoid(world);
-
     }
 
     @Override

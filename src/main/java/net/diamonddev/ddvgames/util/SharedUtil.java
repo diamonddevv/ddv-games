@@ -9,9 +9,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.World;
 
 
 public class SharedUtil {
@@ -56,5 +58,21 @@ public class SharedUtil {
 
     public static double getSquareHypotenuse(double length) { // might use. could make above method use this for funsies or something idk
         return Math.sqrt(Math.pow(length, 2.0) * 2.0);
+    }
+
+    public static Vec3d addY(Vec2f vec2f, double y) {
+        return new Vec3d(vec2f.x, y, vec2f.y);
+    }
+
+    public static Vec3d blockPosToVec(BlockPos blockPos) {
+        return new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+    }
+
+    public static BlockPos vecToBlockPos(Vec3d vec) {
+        return new BlockPos(vec.x, vec.y, vec.z);
+    }
+
+    public static ServerPlayerEntity getServerPlayer(PlayerEntity player, ServerWorld world) {
+        return world.getServer().getPlayerManager().getPlayer(player.getUuid());
     }
 }
