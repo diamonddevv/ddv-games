@@ -4,8 +4,8 @@ import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.math.Cube;
 import net.diamonddev.ddvgames.registry.InitRules;
-import net.diamonddev.ddvgames.util.SharedUtil;
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
+import net.diamonddev.ddvgames.util.SharedUtil;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.FallingBlockEntity;
@@ -18,11 +18,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
@@ -58,7 +56,6 @@ public class RisingEdgeMinigame extends Minigame {
     public Vec2f center;
     public double voidLevel = 0.0;
     private Vec3d spawnPoint;
-    private double timer = 0.0;
 
 
     private double borderRadius;
@@ -149,7 +146,8 @@ public class RisingEdgeMinigame extends Minigame {
 
         world.getWorldBorder().setCenter(this.previousCenter.x, this.previousCenter.y);
         world.getWorldBorder().setSize(this.previousBorderSize);
-        world.getGameRules().setAllValues(this.previousRules, world.getServer());
+
+        writeGamerules(this.previousRules, world);
     }
 
     @Override
@@ -186,13 +184,15 @@ public class RisingEdgeMinigame extends Minigame {
         int ascensionInterval = parseAsInt(RISE_INTERVAL) * 20;
 
         if (this.getTicks() % 20 == 0) { // For-each Second Recursion Loop
-            if (!heightCondition) {
-                if (this.getTicks() >= warmupCondition) {
-                    DDVGamesMod.gameManager.switchState(GameState.fromName(PVP), world);
-                }
-            } else {
-                if (voidLevel >= warmupCondition) {
-                    DDVGamesMod.gameManager.switchState(GameState.fromName(PVP), world);
+            if (DDVGamesMod.gameManager.getCurrentState().getName().matches(PVP)) {
+                if (!heightCondition) {
+                    if (this.getTicks() >= warmupCondition) {
+                        DDVGamesMod.gameManager.switchState(GameState.fromName(PVP), world);
+                    }
+                } else {
+                    if (voidLevel >= warmupCondition) {
+                        DDVGamesMod.gameManager.switchState(GameState.fromName(PVP), world);
+                    }
                 }
             }
         }
@@ -235,12 +235,16 @@ public class RisingEdgeMinigame extends Minigame {
             warmup.get(GameRules.KEEP_INVENTORY).set(true, world.getServer());
             warmup.get(GameRules.DO_IMMEDIATE_RESPAWN).set(true, world.getServer());
 
+            writeGamerules(warmup, world);
+
             DDVGamesMod.gameManager.getPlayers().forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.warmup_start")));
 
         } else if (state.getName().matches(PVP)) {
             GameRules pvp = new GameRules();
             pvp.get(InitRules.PVP).set(true, world.getServer());
             pvp.get(GameRules.NATURAL_REGENERATION).set(parseAsBoolean(HEALING), world.getServer());
+
+            writeGamerules(pvp, world);
 
             this.enablePvp(DDVGamesMod.gameManager.getPlayers());
         }
@@ -296,5 +300,9 @@ public class RisingEdgeMinigame extends Minigame {
             SharedUtil.pushPlayerSubtitle(player, Text.translatable("ddv.minigame.rising_edge.pvp_enabled.sub"));
             player.playSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, 10.0f, 0.5f);
         });
+    }
+
+    private void writeGamerules(GameRules n, World world) {
+        world.getGameRules().setAllValues(n, world.getServer());
     }
 }

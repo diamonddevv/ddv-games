@@ -201,4 +201,8 @@ public class GameManager {
             return Role.fromName(this.game.getDefaultRoleName());
         } else return Role.EMPTY;
     }
+
+    public double getTimer() {
+        return this.game != null ? this.game.timer : 0.0;
+    }
 }

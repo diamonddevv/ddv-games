@@ -25,6 +25,8 @@ public abstract class Minigame {
     private boolean running;
     public GameState currentState;
     public GameState previousState;
+
+    public double timer = 0.0;
     protected Minigame(MutableText name, String semanticVersion, SemanticVersioningSuffix versioningSuffix) {
         this.running = false;
         this.name = name;
@@ -42,6 +44,8 @@ public abstract class Minigame {
         this.verSuffix = versioningSuffix;
 
         this.tickClock = 0;
+
+        this.timer = 0.0;
     }
 
     public boolean isRunning() {
@@ -59,6 +63,12 @@ public abstract class Minigame {
     public abstract void onWin(PlayerEntity winningPlayer, World world, Collection<PlayerEntity> players);
 
     public abstract void tickClock(World world);
+
+    public void essentialTicks(World world) {
+        if (this.getTicks() % 2 == 0) {
+            this.timer += 0.1;
+        }
+    }
 
     public long getTicks() {
         return this.tickClock;

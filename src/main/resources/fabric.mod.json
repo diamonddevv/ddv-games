@@ -21,6 +21,9 @@
     "main": [
       "net.diamonddev.ddvgames.DDVGamesMod"
     ],
+    "client": [
+      "net.diamonddev.ddvgames.client.DDVGamesClient"
+    ],
     "cardinal-components": [
       "net.diamonddev.ddvgames.cca.DDVGamesEntityComponents",
       "net.diamonddev.ddvgames.cca.DDVGamesLevelComponents"
