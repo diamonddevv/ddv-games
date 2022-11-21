@@ -26,7 +26,7 @@ public abstract class Minigame {
     public GameState currentState;
     public GameState previousState;
 
-    public double timer = 0.0;
+    public double timer;
     protected Minigame(MutableText name, String semanticVersion, SemanticVersioningSuffix versioningSuffix) {
         this.running = false;
         this.name = name;
@@ -104,6 +104,7 @@ public abstract class Minigame {
     public void end(Collection<PlayerEntity> players, World world) {
         if (this.isRunning()) {
             this.running = false;
+            this.timer = 0.0;
             this.onEnd(players, world);
         }
     }

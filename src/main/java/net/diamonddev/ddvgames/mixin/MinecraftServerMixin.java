@@ -47,9 +47,10 @@ public abstract class MinecraftServerMixin {
             DDVGamesMod.gameManager.tick();
 
             minigame.tryWin(this.getOverworld());
+            minigame.changeTickClock();
+
             minigame.tickClock(this.getOverworld());
             minigame.essentialTicks(this.getOverworld());
-            minigame.changeTickClock();
         }
     }
 }
