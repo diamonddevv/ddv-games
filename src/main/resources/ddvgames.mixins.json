@@ -9,6 +9,7 @@
     "ServerPlayerEntityMixin"
   ],
   "client": [
+    "InGameHudMixin"
   ],
   "server": [
   ],
