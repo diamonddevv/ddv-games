@@ -36,7 +36,7 @@ public class GameTimeHudOverlay implements IHudRenderer {
             RenderSystem.setShaderTexture(0, STOPWATCH_TEXTURE);
 
             // render - - todo: adjust positions into place
-            DrawableHelper.drawTexture(matrixStack, x - 180, y- 180, 0, 0, 16, 16, 16, 16); // texture
+            DrawableHelper.drawTexture(matrixStack, (x * 2) - 2, 12, 0, 0, 16, 16, 16, 16); // texture
             DrawableHelper.drawTextWithShadow( // text
                     matrixStack, textRenderer,
                     Text.literal("" + MathUtil.round(DDVGamesMod.gameManager.getTimer(), 0)), // This is inaccurate for some reason
