@@ -2,8 +2,8 @@ package net.diamonddev.ddvgames.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.diamonddev.ddvgames.DDVGamesMod;
+import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.math.MathUtil;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
@@ -12,9 +12,9 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
-public class GameTimeHudOverlay implements IHudRenderer {
+public class LivesHudOverlay implements IHudRenderer {
 
-    private static final Identifier STOPWATCH_TEXTURE = DDVGamesMod.id.build("textures/ui/common/stopwatch.png");
+    private static final Identifier HEART_TEXTURE = DDVGamesMod.id.build("textures/ui/rising_edge/lives.png");
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
         if (DDVGamesMod.gameManager.getGameHasStarted()) {
@@ -33,14 +33,14 @@ public class GameTimeHudOverlay implements IHudRenderer {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
             // Set Shader Texture to Stopwatch
-            RenderSystem.setShaderTexture(0, STOPWATCH_TEXTURE);
+            RenderSystem.setShaderTexture(0, HEART_TEXTURE);
 
             // render
-            DrawableHelper.drawTexture(matrixStack, (x * 2) - 40, getTextureBindY(0), 0, 0, 16, 16, 16, 16); // texture
+            DrawableHelper.drawTexture(matrixStack, (x * 2) - 40, getTextureBindY(1), 0, 0, 16, 16, 16, 16); // texture
             DrawableHelper.drawTextWithShadow( // text
                     matrixStack, textRenderer,
-                    Text.literal("" + MathUtil.round(DDVGamesMod.gameManager.getTimer(), 1)), // This is inaccurate for some reason
-                    (x * 2) - 20, getTextBindY(0),
+                    Text.literal("" + DDVGamesEntityComponents.getLives(client.player)),
+                    (x * 2) - 20, getTextBindY(1),
                     0xffffff // white color in hexadecimal
             );
         }

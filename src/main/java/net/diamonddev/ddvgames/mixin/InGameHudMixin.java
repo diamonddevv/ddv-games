@@ -2,6 +2,7 @@ package net.diamonddev.ddvgames.mixin;
 
 import net.diamonddev.ddvgames.client.gui.GameTimeHudOverlay;
 import net.diamonddev.ddvgames.client.gui.IHudRenderer;
+import net.diamonddev.ddvgames.client.gui.LivesHudOverlay;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.hud.InGameHud;
@@ -21,11 +22,13 @@ public abstract class InGameHudMixin {
     @Shadow public abstract TextRenderer getTextRenderer();
 
     private final IHudRenderer timeHudRenderer = new GameTimeHudOverlay();
+    private final IHudRenderer livesHudRenderer = new LivesHudOverlay();
 
     @Inject(method = "render", at = @At("HEAD"))
     private void ddvg$drawHudElements(MatrixStack matrices, float tickDelta, CallbackInfo ci) {
         if (!client.options.hudHidden) {
             timeHudRenderer.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
+            livesHudRenderer.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
         }
     }
 
