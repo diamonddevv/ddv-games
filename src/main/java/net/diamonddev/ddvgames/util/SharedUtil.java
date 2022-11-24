@@ -44,6 +44,10 @@ public class SharedUtil {
         serverWorld.spawnParticles(particle, pos.x, pos.y, pos.z, count, deltaPos.x, deltaPos.y, deltaPos.z, speed);
     }
 
+    public static <T extends ParticleEffect> void spawnParticle(ServerWorld serverWorld, T particle, double yOffset, Vec3d pos, Vec3d deltaPos, int count, double speed) {
+        serverWorld.spawnParticles(particle, pos.x, pos.y + yOffset, pos.z, count, deltaPos.x, deltaPos.y, deltaPos.z, speed);
+    }
+
     public static Vec3d cubeVec(double d) {
         return new Vec3d(d, d ,d);
     }

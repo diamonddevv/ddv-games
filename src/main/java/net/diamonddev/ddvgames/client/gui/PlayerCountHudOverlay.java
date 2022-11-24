@@ -2,7 +2,9 @@ package net.diamonddev.ddvgames.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.diamonddev.ddvgames.DDVGamesMod;
-import net.diamonddev.ddvgames.math.MathUtil;
+import net.diamonddev.ddvgames.minigame.RisingEdgeMinigame;
+import net.diamonddev.ddvgames.minigame.Role;
+import net.diamonddev.ddvgames.registry.InitMinigames;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
@@ -11,12 +13,11 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
-public class GameTimeHudOverlay implements IHudRenderer {
-
-    private static final Identifier STOPWATCH_TEXTURE = DDVGamesMod.id.build("textures/ui/common/stopwatch.png");
+public class PlayerCountHudOverlay implements IHudRenderer {
+    private static final Identifier PLAYERS_TEXTURE = DDVGamesMod.id.build("textures/ui/rising_edge/players.png");
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
-        if (DDVGamesMod.gameManager.getGameHasStarted()) {
+        if (DDVGamesMod.gameManager.getSpecificGameHasStarted(InitMinigames.RISING_EDGE) ) {
             int x, y;
             int width, height;
 
@@ -32,14 +33,14 @@ public class GameTimeHudOverlay implements IHudRenderer {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
             // Set Shader Texture to Stopwatch
-            RenderSystem.setShaderTexture(0, STOPWATCH_TEXTURE);
+            RenderSystem.setShaderTexture(0, PLAYERS_TEXTURE);
 
             // render
-            DrawableHelper.drawTexture(matrixStack, getTextureBindX(BindingSide.LEFT, x), getTextureBindY(0), 0, 0, 16, 16, 16, 16); // texture
+            DrawableHelper.drawTexture(matrixStack, getTextureBindX(BindingSide.LEFT, x), getTextureBindY(1), 0, 0, 16, 16, 16, 16); // texture
             DrawableHelper.drawTextWithShadow( // text
                     matrixStack, textRenderer,
-                    Text.literal("" + MathUtil.round(DDVGamesMod.gameManager.getTimer(), 1)), // This is inaccurate for some reason
-                    getTextBindX(BindingSide.LEFT, x), getTextBindY(0),
+                    Text.literal("" + DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(RisingEdgeMinigame.PLAYER)).size()),
+                    getTextBindX(BindingSide.LEFT, x), getTextBindY(1),
                     0xffffff // white color in hexadecimal
             );
         }

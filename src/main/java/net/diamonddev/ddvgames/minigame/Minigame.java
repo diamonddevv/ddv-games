@@ -66,7 +66,7 @@ public abstract class Minigame {
 
     public void essentialTicks(World world) {
         if (this.getTicks() % 2 == 0) {
-            this.timer += 0.1;
+            this.timer += 1;
         }
     }
 

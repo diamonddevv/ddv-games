@@ -17,12 +17,12 @@ public class IntegerComponent implements Component {
 
     @Override
     public void readFromNbt(NbtCompound tag) {
-        setInteger(tag.getInt(componentId));
+        this.integer = tag.getInt(componentId);
     }
 
     @Override
     public void writeToNbt(NbtCompound tag) {
-        tag.putInt(componentId, getInteger());
+        tag.putInt(componentId, this.integer);
     }
 
 

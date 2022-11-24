@@ -3,21 +3,24 @@ package net.diamonddev.ddvgames.client.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.client.DDVGamesClient;
+import net.diamonddev.ddvgames.math.SimpleVec2i;
 import net.diamonddev.ddvgames.registry.InitMinigames;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
-public class LivesHudOverlay implements IHudRenderer {
+public class RisingEdgePhaseIconHudRenderer implements IHudRenderer {
 
-    private static final Identifier HEART_TEXTURE = DDVGamesMod.id.build("textures/ui/rising_edge/lives.png");
+    private static final Identifier WARMUP_ICON = DDVGamesMod.id.build("textures/ui/rising_edge/phase/warmup.png");
+    private static final Identifier PVP_ICON = DDVGamesMod.id.build("textures/ui/rising_edge/phase/pvp.png");
+
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
         if (DDVGamesMod.gameManager.getSpecificGameHasStarted(InitMinigames.RISING_EDGE)) {
+
             int x, y;
             int width, height;
 
@@ -32,17 +35,23 @@ public class LivesHudOverlay implements IHudRenderer {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-            // Set Shader Texture to Stopwatch
-            RenderSystem.setShaderTexture(0, HEART_TEXTURE);
+            // Set Shader Texture to correct Icon
+            Identifier texture = switch (DDVGamesMod.gameManager.getCurrentState().getName()) {
+                case "warmup" -> WARMUP_ICON;
+                case "pvp" -> PVP_ICON;
+                default -> throw new IllegalStateException("Unexpected value: " + DDVGamesClient.HASHED_ROLES.get(client.player).getName());
+            };
+
+            RenderSystem.setShaderTexture(0, texture);
 
             // render
-            DrawableHelper.drawTexture(matrixStack, getTextureBindX(BindingSide.RIGHT, x), getTextureBindY(0), 0, 0, 16, 16, 16, 16); // texture
-            DrawableHelper.drawTextWithShadow( // text
-                    matrixStack, textRenderer,
-                    Text.literal("" + DDVGamesClient.HASHED_LIVES.get(client.player)),
-                    getTextBindX(BindingSide.RIGHT, x), getTextBindY(0),
-                    0xffffff // white color in hexadecimal
-            );
+            SimpleVec2i vec = getIconBinding(1, y);
+            DrawableHelper.drawTexture(
+                    matrixStack,
+                    vec.getX(), vec.getY(),
+                    0, 0,
+                    16, 16,
+                    16, 16);
         }
     }
 }

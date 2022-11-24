@@ -160,7 +160,7 @@ public class MinigameCommand {
         return 1;
     }
     public static int exeStop(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        if (DDVGamesMod.gameManager.isGameRunning()) {
+        if (DDVGamesMod.gameManager.getGameHasStarted()) {
             context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.stop_game", DDVGamesMod.gameManager.getGame().getName()), true);
             DDVGamesMod.gameManager.stopGame(context.getSource().getWorld());
             return 1;
@@ -322,7 +322,7 @@ public class MinigameCommand {
         GameState state = GameStateArgType.getState(context, "state");
 
         DDVGamesMod.gameManager.switchState(state, context.getSource().getWorld());
-        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.jumpState"), true);
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.jumpState", state.getName()), true);
         return 1;
     }
 

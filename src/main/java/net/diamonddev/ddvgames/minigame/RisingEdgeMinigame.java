@@ -61,7 +61,7 @@ public class RisingEdgeMinigame extends Minigame {
     private double borderRadius;
     private final int[] elevationMilestones = new int[] {-32, -16, 0, 16, 64, 128};
     public RisingEdgeMinigame() {
-        super(Text.translatable("ddv.minigame.rising_edge"), "0.0.1", SemanticVersioningSuffix.ALPHA);
+        super(Text.translatable("ddv.minigame.rising_edge"), "0.0.1", SemanticVersioningSuffix.BETA);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class RisingEdgeMinigame extends Minigame {
     }
 
     @Override
-    public void onStart(Entity executor, Collection<PlayerEntity> players, World world) { // todo: possibly hash previous player spawnpoints and restore
+    public void onStart(Entity executor, Collection<PlayerEntity> players, World world) {
         double borderDist = parseAsDouble(BORDER_DIST);
         boolean glowing = parseAsBoolean(GLOWING);
         int lives = parseAsInt(LIVES);
@@ -146,6 +146,7 @@ public class RisingEdgeMinigame extends Minigame {
 
         world.getWorldBorder().setCenter(this.previousCenter.x, this.previousCenter.y);
         world.getWorldBorder().setSize(this.previousBorderSize);
+        players.forEach(player -> DDVGamesEntityComponents.setLives(player, 0));
 
         writeGamerules(this.previousRules, world);
     }
@@ -184,7 +185,7 @@ public class RisingEdgeMinigame extends Minigame {
         int ascensionInterval = parseAsInt(RISE_INTERVAL) * 20;
 
         if (this.getTicks() % 20 == 0) { // For-each Second Recursion Loop
-            if (DDVGamesMod.gameManager.getCurrentState().getName().matches(PVP)) {
+            if (!DDVGamesMod.gameManager.getCurrentState().getName().matches(PVP)) {
                 if (!heightCondition) {
                     if (this.getTicks() >= warmupCondition) {
                         DDVGamesMod.gameManager.switchState(GameState.fromName(PVP), world);

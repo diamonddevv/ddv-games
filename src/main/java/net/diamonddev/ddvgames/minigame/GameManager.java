@@ -70,9 +70,16 @@ public class GameManager {
     public boolean getGameHasStarted() {
         return this.running;
     }
+    public boolean getSpecificGameHasStarted(Minigame game) {
+        if (this.game == game) {
+            return this.running;
+        } else {
+            return false;
+        }
+    }
     public void stopGame(World world) {
         if (game.isRunning()) {
-            this.running = true;
+            this.running = false;
             game.end(this.players, world);
         }
     }
@@ -127,6 +134,7 @@ public class GameManager {
     }
 
     public void addPlayersWithRole(Collection<ServerPlayerEntity> players, Role role) {
+        this.players.clear();
         this.players.addAll(players);
         players.forEach(player -> attachRole(player, role));
     }
@@ -179,8 +187,7 @@ public class GameManager {
     }
 
     public GameState getCurrentState() {
-        currentState = this.isGameRunning() ? getGame().currentState : null;
-        return currentState;
+        return this.getGameHasStarted() ? getGame().currentState : null;
     }
 
     public Collection<GameState> getStates() {
@@ -203,6 +210,6 @@ public class GameManager {
     }
 
     public double getTimer() {
-        return this.game != null ? this.game.timer : 0.0;
+        return this.game != null ? this.game.timer / 10.0 : 0.0;
     }
 }
