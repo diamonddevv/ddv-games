@@ -11,7 +11,7 @@ public class IntegerComponent implements Component {
         this.componentId = name;
     }
 
-    private int integer;
+    private int integer = 0;
 
 
 
@@ -30,7 +30,7 @@ public class IntegerComponent implements Component {
         return integer;
     }
 
-    public void setInteger(int integer) {
-        this.integer = integer;
+    public void setInteger(int i) {
+        this.integer = i;
     }
 }

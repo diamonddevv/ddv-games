@@ -187,7 +187,7 @@ public class GameManager {
     }
 
     public GameState getCurrentState() {
-        return this.getGameHasStarted() ? getGame().currentState : null;
+        return this.getGameHasStarted() ? currentState : null;
     }
 
     public Collection<GameState> getStates() {
@@ -198,6 +198,8 @@ public class GameManager {
         if (isGameRunning()) {
             previousState = currentState;
             currentState = newState;
+            this.game.currentState = currentState;
+            this.game.previousState = previousState;
             game.onStateStarts(currentState, world);
             game.onStateEnds(previousState, world);
         }

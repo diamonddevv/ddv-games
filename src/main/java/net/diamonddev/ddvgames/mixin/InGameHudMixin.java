@@ -28,7 +28,7 @@ public abstract class InGameHudMixin {
     private final IHudRenderer playerCount = new PlayerCountHudOverlay();
 
     private final IHudRenderer roleIcon = new RisingEdgeRoleIconHudRenderer();
-    private final IHudRenderer phaseIcon = new RisingEdgePhaseIconHudRenderer();
+    private final IHudRenderer phaseIcon = new RisingEdgeStateIconHudRenderer();
 
     @Inject(method = "render", at = @At("HEAD"))
     private void ddvg$drawHudElements(MatrixStack matrices, float tickDelta, CallbackInfo ci) {

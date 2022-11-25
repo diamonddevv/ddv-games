@@ -12,10 +12,11 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
-public class RisingEdgePhaseIconHudRenderer implements IHudRenderer {
+public class RisingEdgeStateIconHudRenderer implements IHudRenderer {
 
     private static final Identifier WARMUP_ICON = DDVGamesMod.id.build("textures/ui/rising_edge/phase/warmup.png");
     private static final Identifier PVP_ICON = DDVGamesMod.id.build("textures/ui/rising_edge/phase/pvp.png");
+    private static final Identifier FAILSAFE = DDVGamesMod.id.build("textures/ui/common/huh.png");
 
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
@@ -39,7 +40,7 @@ public class RisingEdgePhaseIconHudRenderer implements IHudRenderer {
             Identifier texture = switch (DDVGamesMod.gameManager.getCurrentState().getName()) {
                 case "warmup" -> WARMUP_ICON;
                 case "pvp" -> PVP_ICON;
-                default -> throw new IllegalStateException("Unexpected value: " + DDVGamesClient.HASHED_ROLES.get(client.player).getName());
+                default -> throw new IllegalStateException("Unexpected value: " + DDVGamesMod.gameManager.getCurrentState().getName());
             };
 
             RenderSystem.setShaderTexture(0, texture);

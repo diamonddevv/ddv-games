@@ -43,12 +43,10 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
                     ParticleTypes.ELECTRIC_SPARK, 0.5, this.getPos(), SharedUtil.cubeVec(0.22), 50, 0.1);
 
 
+            DDVGamesEntityComponents.setLives(this, DDVGamesEntityComponents.getLives(this) - 1);
             if (DDVGamesEntityComponents.getLives(this) <= 0) {
                 DDVGamesMod.gameManager.attachRole(this, Role.fromName(RisingEdgeMinigame.SPECTATOR));
                 SharedUtil.changePlayerGamemode(this, GameMode.SPECTATOR);
-            } else {
-                int set = DDVGamesEntityComponents.getLives(this) - 1;
-                DDVGamesEntityComponents.setLives(this, set);
             }
         }
     }

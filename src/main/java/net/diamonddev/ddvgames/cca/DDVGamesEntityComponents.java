@@ -4,6 +4,7 @@ import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistryV3;
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry;
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer;
+import dev.onyxstudios.cca.api.v3.entity.RespawnCopyStrategy;
 import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.minigame.Role;
 import net.diamonddev.ddvgames.network.NetcodeConstants;
@@ -23,9 +24,9 @@ public class DDVGamesEntityComponents implements EntityComponentInitializer {
 
     @Override
     public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
-        registry.registerFor(PlayerEntity.class, ROLE, player -> new RoleComponent());
+        registry.registerForPlayers(ROLE, player -> new RoleComponent(), RespawnCopyStrategy.ALWAYS_COPY);
 
-        registry.registerFor(PlayerEntity.class, RISINGEDGE_LIVES, player -> new IntegerComponent("Lives"));
+        registry.registerForPlayers(RISINGEDGE_LIVES, player -> new IntegerComponent("Lives"), RespawnCopyStrategy.ALWAYS_COPY);
     }
 
     public static Role getRole(PlayerEntity player) {
@@ -37,10 +38,13 @@ public class DDVGamesEntityComponents implements EntityComponentInitializer {
     }
 
 
-    public static int getLives(PlayerEntity player) {return RISINGEDGE_LIVES.get(player).getInteger();}
+    public static int getLives(PlayerEntity player) {
+        return RISINGEDGE_LIVES.get(player).getInteger();
+    }
     public static void setLives(PlayerEntity player, int i) {
         RISINGEDGE_LIVES.get(player).setInteger(i);
         ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_LIVES_ID, SyncLivesS2CPacket.write(getLives(player), player));
     }
+
 
 }

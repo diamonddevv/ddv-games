@@ -104,6 +104,8 @@ public class MinigameCommand {
                                         .then(argument("state", GameStateArgType.gamestate())
                                                 .executes(MinigameCommand::exeJumpToState)
                                         )
+                                ).then(literal("get")
+                                        .executes(MinigameCommand::exeGetState)
                                 )
                         ).then(literal("togglepause")
                                 .executes(MinigameCommand::exeTogglePause)
@@ -323,6 +325,12 @@ public class MinigameCommand {
 
         DDVGamesMod.gameManager.switchState(state, context.getSource().getWorld());
         context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.jumpState", state.getName()), true);
+        return 1;
+    }
+
+    public static int exeGetState(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        GameState state = DDVGamesMod.gameManager.getCurrentState();
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.getState", state.getName()), true);
         return 1;
     }
 

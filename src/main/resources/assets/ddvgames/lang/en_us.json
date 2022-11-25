@@ -26,6 +26,7 @@
   "ddv.command.feedback.remove_players_role": "Removed player(s) from all roles.",
   "ddv.command.feedback.paused": "Successfully %s Game.",
   "ddv.command.feedback.jumpState": "Jumped to state '%s'.",
+  "ddv.command.feedback.getState": "The current game state is: '%s'",
   "ddv.command.feedback.pause": "paused",
   "ddv.command.feedback.play": "resumed",
 
