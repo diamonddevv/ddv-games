@@ -35,6 +35,7 @@
 
   "ddv.command.exception.invalid_game": "The minigame %s could not be found!",
   "ddv.command.exception.invalid_setting": "The setting '%s' could not be found!",
+  "ddv.command.exception.invalid_settingset": "The settings set '%s' could not be found!",
   "ddv.command.exception.not_running": "Couldn't stop minigame (No minigame is running)",
   "ddv.command.exception.cannot_pause": "Couldn't pause minigame (No minigame is running)",
   "ddv.command.exception.running": "Couldn't edit minigame settings (Minigame is running)",

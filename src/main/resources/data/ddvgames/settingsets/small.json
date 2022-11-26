@@ -1,0 +1,9 @@
+{
+  "minigame_id": "ddvgames:rising_edge",
+  "keys": [
+    {
+      "key": "borderDistance",
+      "value": 10.0
+    }
+  ]
+}

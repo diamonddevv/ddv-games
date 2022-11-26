@@ -7,14 +7,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
-import net.diamonddev.ddvgames.command.argument.GameStateArgType;
-import net.diamonddev.ddvgames.command.argument.MinigameArgType;
-import net.diamonddev.ddvgames.command.argument.RoleArgType;
-import net.diamonddev.ddvgames.command.argument.SettingArgType;
-import net.diamonddev.ddvgames.minigame.GameState;
-import net.diamonddev.ddvgames.minigame.Minigame;
-import net.diamonddev.ddvgames.minigame.Role;
-import net.diamonddev.ddvgames.minigame.Setting;
+import net.diamonddev.ddvgames.command.argument.*;
+import net.diamonddev.ddvgames.minigame.*;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
@@ -48,17 +42,26 @@ public class MinigameCommand {
                         ).then(literal("start")
                                 .then(literal("quick")
                                         .then(argument("minigame", MinigameArgType.minigame())
+                                                .then(argument("settingset", SettingsSetArgType.settingset())
+                                                        .executes(MinigameCommand::exeQuickStartWithSettingSet)
+                                                )
                                                 .executes(MinigameCommand::exeQuickStart)
                                         )
                                 ).executes(MinigameCommand::exeStart)
                         ).then(literal("stop")
                                 .executes(MinigameCommand::exeStop)
                         ).then(literal("settings")
-                                .then(argument("setting", SettingArgType.setting())
-                                        .then(argument("value", DoubleArgumentType.doubleArg())
-                                                .executes(MinigameCommand::exeEditSettings)
+                                .then(literal("settings")
+                                        .then(argument("setting", SettingArgType.setting())
+                                                .then(argument("value", DoubleArgumentType.doubleArg())
+                                                        .executes(MinigameCommand::exeEditSettings)
+                                                )
+                                                .executes(MinigameCommand::exeGetSettingVal)
                                         )
-                                        .executes(MinigameCommand::exeGetSettingVal)
+                                ).then(literal("settingset")
+                                        .then(argument("settingset", SettingsSetArgType.settingset())
+                                                .executes(MinigameCommand::exeSetSettingsSet)
+                                        )
                                 )
                         ).then(literal("get")
                                 .executes(MinigameCommand::exeGet)
@@ -161,6 +164,24 @@ public class MinigameCommand {
         context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.quickstart_game", game.getName().getString(), game.getSemanticVersion().getString()), true);
         return 1;
     }
+
+    public static int exeQuickStartWithSettingSet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        if (DDVGamesMod.gameManager.isGameRunning()) {
+            throw ALREADY_RUNNING.create();
+        }
+
+        Minigame game = MinigameArgType.getMinigame(context, "minigame");
+        SettingsSet settingsSet = SettingsSetArgType.getSettingsSet(context, "settingset");
+
+        DDVGamesMod.gameManager.setGame(game);
+        DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
+        DDVGamesMod.gameManager.setAllSettings(settingsSet);
+
+        DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());
+
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.quickstart_game", game.getName().getString(), game.getSemanticVersion().getString()), true);
+        return 1;
+    }
     public static int exeStop(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         if (DDVGamesMod.gameManager.getGameHasStarted()) {
             context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.stop_game", DDVGamesMod.gameManager.getGame().getName()), true);
@@ -207,6 +228,17 @@ public class MinigameCommand {
             Setting setting = SettingArgType.getSetting(context, "setting");
             double val = DDVGamesMod.gameManager.getSetting(setting.getSimpleName());
             context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.getSettingVal", setting.getSimpleName(), val), false);
+            return 1;
+        } else {
+            throw NO_GAME.create();
+        }
+    }
+
+    public static int exeSetSettingsSet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        if (DDVGamesMod.gameManager.hasGame()) {
+            SettingsSet settingsSet = SettingsSetArgType.getSettingsSet(context, "settingset");
+            DDVGamesMod.gameManager.setAllSettings(settingsSet);
+            context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.getSettingVal", settingsSet.getId().toString()), true);
             return 1;
         } else {
             throw NO_GAME.create();

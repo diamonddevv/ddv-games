@@ -1,6 +1,7 @@
 package net.diamonddev.ddvgames.minigame;
 
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
+import net.diamonddev.ddvgames.registry.InitRegistries;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -8,6 +9,8 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GameManager {
@@ -182,6 +185,14 @@ public class GameManager {
         for (Setting s : settings) {
             if (s.getSimpleName().matches(simpleName)) {
                 s.setValue(val);
+            }
+        }
+    }
+
+    public void setAllSettings(SettingsSet set) {
+        if (set.getId() == InitRegistries.MINIGAMES.getId(this.game)) {
+            for (Map.Entry<String, Double> pair : set.getKeys().entrySet()) {
+                setSetting(pair.getKey(), pair.getValue());
             }
         }
     }

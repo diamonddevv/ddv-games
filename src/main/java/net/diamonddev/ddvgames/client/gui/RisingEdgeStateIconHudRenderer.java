@@ -16,7 +16,6 @@ public class RisingEdgeStateIconHudRenderer implements IHudRenderer {
 
     private static final Identifier WARMUP_ICON = DDVGamesMod.id.build("textures/ui/rising_edge/phase/warmup.png");
     private static final Identifier PVP_ICON = DDVGamesMod.id.build("textures/ui/rising_edge/phase/pvp.png");
-    private static final Identifier FAILSAFE = DDVGamesMod.id.build("textures/ui/common/huh.png");
 
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
