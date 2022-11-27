@@ -9,6 +9,7 @@ import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.command.argument.*;
 import net.diamonddev.ddvgames.minigame.*;
+import net.diamonddev.ddvgames.registry.InitRegistries;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
@@ -39,6 +40,7 @@ public class MinigameCommand {
                                 .then(argument("minigame", MinigameArgType.minigame())
                                         .executes(MinigameCommand::exeSet)
                                 )
+                                .executes(MinigameCommand::exeUnload)
                         ).then(literal("start")
                                 .then(literal("quick")
                                         .then(argument("minigame", MinigameArgType.minigame())
@@ -115,11 +117,22 @@ public class MinigameCommand {
                         )
         );
     }
+
     public static int exeSet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         if (!DDVGamesMod.gameManager.isGameRunning()) {
             Minigame game = MinigameArgType.getMinigame(context, "minigame");
             DDVGamesMod.gameManager.setGame(game);
             context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.set_game", game.getName().getString(), game.getSemanticVersion().getString()), true);
+            return 1;
+        } else {
+            throw RUNNING_SET.create();
+        }
+    }
+
+    public static int exeUnload(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        if (!DDVGamesMod.gameManager.isGameRunning()) {
+            DDVGamesMod.gameManager.setGame(null);
+            context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.unloaded_game"), true);
             return 1;
         } else {
             throw RUNNING_SET.create();
@@ -156,6 +169,8 @@ public class MinigameCommand {
 
         Minigame game = MinigameArgType.getMinigame(context, "minigame");
 
+        //if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();
+
         DDVGamesMod.gameManager.setGame(game);
         DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
 
@@ -171,7 +186,26 @@ public class MinigameCommand {
         }
 
         Minigame game = MinigameArgType.getMinigame(context, "minigame");
-        SettingsSet settingsSet = SettingsSetArgType.getSettingsSet(context, "settingset");
+        SettingsSet settingsSet = SettingsSetArgType.getSettingsSet(context, "settingset", InitRegistries.MINIGAMES.getId(game));
+
+        //if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();
+
+        String name = null, author = null;
+        Text text;
+
+        if (settingsSet.hasNameData()) name = settingsSet.getSetName();
+        if (settingsSet.hasAuthorData()) author = settingsSet.getSetAuthor();
+
+        if (name == null && author == null) {
+            text = Text.translatable("ddv.command.feedback.quickstart_game", game.getName().getString(), game.getSemanticVersion().getString());
+        } else if (name == null) {
+            text = Text.translatable("ddv.command.feedback.quickstart_game.settingset.author", game.getName().getString(), game.getSemanticVersion().getString(), author);
+        } else if (author == null) {
+            text = Text.translatable("ddv.command.feedback.quickstart_game.settingset.name", game.getName().getString(), game.getSemanticVersion().getString(), name);
+        } else {
+            text = Text.translatable("ddv.command.feedback.quickstart_game.settingset.name_author", game.getName().getString(), game.getSemanticVersion().getString(), name, author);
+        }
+
 
         DDVGamesMod.gameManager.setGame(game);
         DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
@@ -179,7 +213,7 @@ public class MinigameCommand {
 
         DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());
 
-        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.quickstart_game", game.getName().getString(), game.getSemanticVersion().getString()), true);
+        context.getSource().sendFeedback(text, true);
         return 1;
     }
     public static int exeStop(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -236,9 +270,28 @@ public class MinigameCommand {
 
     public static int exeSetSettingsSet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         if (DDVGamesMod.gameManager.hasGame()) {
-            SettingsSet settingsSet = SettingsSetArgType.getSettingsSet(context, "settingset");
+            SettingsSet settingsSet = SettingsSetArgType.getSettingsSet(context, "settingset", DDVGamesMod.gameManager.getCurrentGameId());
             DDVGamesMod.gameManager.setAllSettings(settingsSet);
-            context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.getSettingVal", settingsSet.getId().toString()), true);
+
+            String name = null, author = null;
+            Text text;
+
+            if (settingsSet.hasNameData()) name = settingsSet.getSetName();
+            if (settingsSet.hasAuthorData()) author = settingsSet.getSetAuthor();
+
+            if (name == null && author == null) {
+                text = Text.translatable("ddv.command.feedback.applySettingset");
+            } else if (name == null) {
+                text = Text.translatable("ddv.command.feedback.applySettingset.author", author);
+            } else if (author == null) {
+                text = Text.translatable("ddv.command.feedback.applySettingset.name", name);
+            } else {
+                text = Text.translatable("ddv.command.feedback.applySettingset.name_author", name, author);
+            }
+
+
+
+            context.getSource().sendFeedback(text, true);
             return 1;
         } else {
             throw NO_GAME.create();

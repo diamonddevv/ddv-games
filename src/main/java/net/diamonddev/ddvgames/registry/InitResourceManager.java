@@ -6,6 +6,7 @@ import net.diamonddev.ddvgames.minigame.SettingsSet;
 import net.diamonddev.libgenetics.common.api.v1.interfaces.RegistryInitializer;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class InitResourceManager implements RegistryInitializer {
 
@@ -23,8 +24,7 @@ public class InitResourceManager implements RegistryInitializer {
     private static final Gson GSON_READER = new Gson();
 
 
-    public static ArrayList<SettingsSet> RESOURCE_SETTINGSSET = new ArrayList<>();
-    public static ArrayList<String> RESOURCE_SETTINGSSET_KEYS = new ArrayList<>();
+    public static HashMap<String, SettingsSet> RESOURCE_SETTINGSSET = new HashMap<>();
 
 
     @Override
@@ -53,11 +53,29 @@ public class InitResourceManager implements RegistryInitializer {
                         InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8); // Create Reader
                         SettingsSet.SettingsSetJsonFormat formattedJson = GSON_READER.fromJson(reader, SettingsSet.SettingsSetJsonFormat.class);
                         SettingsSet set = SettingsSet.fromJsonFormat(formattedJson);
-                        RESOURCE_SETTINGSSET.add(set);
-                        RESOURCE_SETTINGSSET_KEYS.add(set.getId().toString());
 
+                        if (FabricLoaderImpl.INSTANCE.isDevelopmentEnvironment()) {
+                            RESOURCE_MANAGER_LOGGER.info("-- DevEnv SettingSet Resource Loading Info --");
+
+                            RESOURCE_MANAGER_LOGGER.info("Loaded File: " + id.toString());
+
+                            RESOURCE_MANAGER_LOGGER.info("Has Name: " + set.hasNameData());
+                            RESOURCE_MANAGER_LOGGER.info("Has Author: " + set.hasAuthorData());
+
+                            RESOURCE_MANAGER_LOGGER.info("Read Name: " + set.getSetName());
+                            RESOURCE_MANAGER_LOGGER.info("Read Name: " + set.getSetAuthor());
+
+                            RESOURCE_MANAGER_LOGGER.info("Read Game ID: " + set.getId());
+                            RESOURCE_MANAGER_LOGGER.info("Read Keys: " + set.getKeys());
+
+                            RESOURCE_MANAGER_LOGGER.info("---------------------------------------------");
+                        }
+
+                        StringBuilder path = new StringBuilder(id.getPath()).delete(0, 12).reverse().delete(0, 5).reverse(); // Get rid of prefixed initial filepath and .json
+
+                        RESOURCE_SETTINGSSET.put(path.toString(), set);
                     } catch (Exception e) {
-                        RESOURCE_MANAGER_LOGGER.error("Error occurred while loading resource json " + id.toString(), e);
+                        RESOURCE_MANAGER_LOGGER.error("Error occurred while loading SettingsSet resource json " + id.toString(), e);
                     }
                 }
             }

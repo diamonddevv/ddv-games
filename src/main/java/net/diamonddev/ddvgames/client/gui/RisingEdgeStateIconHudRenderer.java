@@ -19,7 +19,7 @@ public class RisingEdgeStateIconHudRenderer implements IHudRenderer {
 
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
-        if (DDVGamesMod.gameManager.getSpecificGameHasStarted(InitMinigames.RISING_EDGE)) {
+        if (DDVGamesMod.gameManager.getSpecificGameHasStarted(InitMinigames.RISING_EDGE) && DDVGamesMod.gameManager.getCurrentState() != null) {
 
             int x, y;
             int width, height;

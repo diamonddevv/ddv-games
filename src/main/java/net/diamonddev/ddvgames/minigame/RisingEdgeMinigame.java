@@ -31,9 +31,9 @@ import static net.diamonddev.ddvgames.minigame.Setting.*;
 
 public class RisingEdgeMinigame extends Minigame {
 
-    private static final String LIVES = "livesPerPlayer";
+    private static final String LIVES = "lives";
     private static final String GLOWING = "giveGlowing";
-    private static final String HEALING = "allowHealing";
+    private static final String HEALING = "naturalRegeneration";
     private static final String BORDER_DIST = "borderDistance";
     private static final String USE_HEIGHT_CONDITION = "warmupHeightCondition";
     private static final String WARMUP_CONDITION = "warmupCondition";
@@ -48,9 +48,6 @@ public class RisingEdgeMinigame extends Minigame {
     private double previousBorderSize = 0.0;
     private Vec2f previousCenter = new Vec2f(0.0f, 0.0f);
     private GameRules previousRules;
-
-    private static final StatusEffectInstance GLOWING_EFFECT_INSTANCE =
-            new StatusEffectInstance(StatusEffects.GLOWING, 100000, 1, true, false, false);
 
 
     public Vec2f center;
@@ -130,9 +127,8 @@ public class RisingEdgeMinigame extends Minigame {
         // Players in Survival Mode
         roledPlayers.forEach(player -> SharedUtil.changePlayerGamemode(player, GameMode.SURVIVAL));
 
-        if (glowing) { // Glowing to players, if enabled
-            roledPlayers.forEach(player -> player.addStatusEffect(GLOWING_EFFECT_INSTANCE));
-        }
+        // Glowing
+        roledPlayers.forEach(player -> player.setGlowing(true));
 
         // Set Lives
         roledPlayers.forEach(player -> DDVGamesEntityComponents.setLives(player, lives));
@@ -147,6 +143,9 @@ public class RisingEdgeMinigame extends Minigame {
         world.getWorldBorder().setCenter(this.previousCenter.x, this.previousCenter.y);
         world.getWorldBorder().setSize(this.previousBorderSize);
         players.forEach(player -> DDVGamesEntityComponents.setLives(player, 0));
+
+        // Unglowing
+        players.forEach(player -> player.setGlowing(false));
 
         writeGamerules(this.previousRules, world);
     }
@@ -202,7 +201,6 @@ public class RisingEdgeMinigame extends Minigame {
             this.timer += 0.1;
         }
 
-
         if (this.getTicks() % ascensionInterval == 0) {
             voidLevel += 1.0;
             voidRise(world, DDVGamesMod.gameManager.getPlayers());
@@ -213,8 +211,7 @@ public class RisingEdgeMinigame extends Minigame {
 
     @Override
     public boolean canStart(Collection<PlayerEntity> players) {
-        DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER));
-        return true;
+        return DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER)).size() > 1;
     }
 
     @Override

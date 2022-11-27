@@ -5,12 +5,12 @@ import net.diamonddev.ddvgames.registry.InitRegistries;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GameManager {
@@ -190,11 +190,17 @@ public class GameManager {
     }
 
     public void setAllSettings(SettingsSet set) {
-        if (set.getId() == InitRegistries.MINIGAMES.getId(this.game)) {
+        if (set.getId().toString().matches(getCurrentGameId().toString())) {
             for (Map.Entry<String, Double> pair : set.getKeys().entrySet()) {
                 setSetting(pair.getKey(), pair.getValue());
             }
         }
+    }
+
+    public Identifier getCurrentGameId() {
+        if (this.game != null) {
+            return InitRegistries.MINIGAMES.getId(this.game);
+        } else throw new NullPointerException("Current game is null, could not get registry ID");
     }
 
     public GameState getCurrentState() {

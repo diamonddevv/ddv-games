@@ -1,0 +1,35 @@
+{
+  "name": "Default Rising Edge Settings",
+  "author": "DiamondDev",
+  "minigame_id": "ddvgames:rising_edge",
+  "keys": [
+    {
+      "key": "borderDistance",
+      "value": 100.0
+    },
+    {
+      "key": "lives",
+      "value": 3.0
+    },
+    {
+      "key": "warmupHeightCondition",
+      "value": 1.0
+    },
+    {
+      "key": "warmupCondition",
+      "value": 64.0
+    },
+    {
+      "key": "riseInterval",
+      "value": 3.0
+    },
+    {
+      "key": "glowing",
+      "value": 0.0
+    },
+    {
+      "key": "naturalRegeneration",
+      "value": 1.0
+    }
+  ]
+}

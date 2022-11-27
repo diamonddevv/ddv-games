@@ -29,16 +29,16 @@ public abstract class MinecraftServerMixin {
         }
     }
 
-    @Inject(method = "loadWorld", at = @At("HEAD"))
-    public void ddvg$loadAndSyncLevelCardinalComponents(CallbackInfo ci) {
-        LevelComponents.sync(DDVGamesLevelComponents.GAME_MANAGER, (MinecraftServer) (Object) this);
-        DDVGamesMod.LOGGER.info("Synced & Loaded Game Manager Data Successfully! -- Note: This is actually a lie, this doesnt work yet lol");
-    }
-    @Inject(method = "shutdown", at = @At("HEAD"))
-    public void ddvg$saveAndSyncLevelCardinalComponents(CallbackInfo ci) {
-        LevelComponents.sync(DDVGamesLevelComponents.GAME_MANAGER, (MinecraftServer) (Object) this);
-        DDVGamesMod.LOGGER.info("Synced & Saved Game Manager Data Successfully! -- Note: This is actually a lie, this doesnt work yet lol");
-    }
+//    @Inject(method = "loadWorld", at = @At("HEAD"))
+//    public void ddvg$loadAndSyncLevelCardinalComponents(CallbackInfo ci) {
+//        LevelComponents.sync(DDVGamesLevelComponents.GAME_MANAGER, (MinecraftServer) (Object) this);
+//        DDVGamesMod.LOGGER.info("Synced & Loaded Game Manager Data Successfully! -- Note: This is actually a lie, this doesnt work yet lol");
+//    }
+//    @Inject(method = "shutdown", at = @At("HEAD"))
+//    public void ddvg$saveAndSyncLevelCardinalComponents(CallbackInfo ci) {
+//        LevelComponents.sync(DDVGamesLevelComponents.GAME_MANAGER, (MinecraftServer) (Object) this);
+//        DDVGamesMod.LOGGER.info("Synced & Saved Game Manager Data Successfully! -- Note: This is actually a lie, this doesnt work yet lol");
+//    }
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void ddvg$runMinigameTickClock(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {

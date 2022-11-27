@@ -30,6 +30,8 @@ public abstract class InGameHudMixin {
     private final IHudRenderer roleIcon = new RisingEdgeRoleIconHudRenderer();
     private final IHudRenderer phaseIcon = new RisingEdgeStateIconHudRenderer();
 
+    private final IHudRenderer winnerIcon = new RisingEdgeWinnerIconHudRenderer();
+
     @Inject(method = "render", at = @At("HEAD"))
     private void ddvg$drawHudElements(MatrixStack matrices, float tickDelta, CallbackInfo ci) {
         if (!client.options.hudHidden) {
@@ -40,6 +42,7 @@ public abstract class InGameHudMixin {
             playerCount.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
             roleIcon.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
             phaseIcon.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
+            winnerIcon.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
         }
     }
 

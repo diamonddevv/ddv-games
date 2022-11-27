@@ -8,12 +8,24 @@
   "ddv.minigame.rising_edge.warmup_start": "Warmup has Started! Good luck, you might need it..",
 
   "ddv.command.feedback.set_game": "Loaded Minigame: %s %s",
+  "ddv.command.feedback.unloaded_game": "Unloaded Minigame.",
   "ddv.command.feedback.get_game": "Minigame currently loaded: %s %s",
   "ddv.command.feedback.get_game_none": "No minigame is currently set!",
   "ddv.command.feedback.getSettingVal": "Setting '%s' is currently set to: %s",
   "ddv.command.feedback.setSettingVal": "Set setting '%s' to: %s",
+
+  "ddv.command.feedback.applySettingset": "Applied SettingSet.",
+  "ddv.command.feedback.applySettingset.name": "Applied SettingSet '%s'.",
+  "ddv.command.feedback.applySettingset.author": "Applied SettingSet. {SettingSet by %s}",
+  "ddv.command.feedback.applySettingset.name_author": "Applied SettingSet '%s'. {by %s}",
+
   "ddv.command.feedback.start_game": "Started minigame %s!",
   "ddv.command.feedback.quickstart_game": "Quickstarted minigame %s! {%s}",
+
+  "ddv.command.feedback.quickstart_game.settingset.name": "Quickstarted minigame %s {%s} with SettingSet '%s'!",
+  "ddv.command.feedback.quickstart_game.settingset.author": "Quickstarted minigame %s {%s} with SettingSet! {SettingSet by %s}",
+  "ddv.command.feedback.quickstart_game.settingset.name_author": "Quickstarted minigame %s {%s} with SettingSet '%s'! {by %s}",
+
   "ddv.command.feedback.stop_game": "Stopped minigame %s.",
   "ddv.command.feedback.added_players": "Added Players Successfully.",
   "ddv.command.feedback.removed_players": "Removed Players Successfully.",
