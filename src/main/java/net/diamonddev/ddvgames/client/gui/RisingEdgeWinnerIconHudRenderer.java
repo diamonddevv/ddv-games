@@ -17,35 +17,34 @@ public class RisingEdgeWinnerIconHudRenderer implements IHudRenderer {
 
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
-        if (DDVGamesMod.gameManager.getSpecificGameHasStarted(InitMinigames.RISING_EDGE)) {
-            if (DDVGamesMod.gameManager.getWinner() == client.player) {
+        if (DDVGamesMod.gameManager.getWinner() == client.player) {
 
-                int x, y;
-                int width, height;
+            int x, y;
+            int width, height;
 
-                // Get Width, Height, X and Y
-                width = client.getWindow().getScaledWidth();
-                height = client.getWindow().getScaledHeight();
+            // Get Width, Height, X and Y
+            width = client.getWindow().getScaledWidth();
+            height = client.getWindow().getScaledHeight();
 
-                x = width / 2;
-                y = height;
+            x = width / 2;
+            y = height;
 
-                // initialize rendering for this
-                RenderSystem.setShader(GameRenderer::getPositionTexShader);
-                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            // initialize rendering for this
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-                // Set Shader Texture to correct Icon
-                RenderSystem.setShaderTexture(0, CROWN_ICON);
+            // Set Shader Texture to correct Icon
+            RenderSystem.setShaderTexture(0, CROWN_ICON);
 
-                // render
-                SimpleVec2i vec = getIconBinding(2, y);
-                DrawableHelper.drawTexture(
-                        matrixStack,
-                        vec.getX(), vec.getY(),
-                        0, 0,
-                        16, 16,
-                        16, 16);
-            }
+            // render
+            SimpleVec2i vec = getIconBinding(2, y);
+            DrawableHelper.drawTexture(
+                    matrixStack,
+                    vec.getX(), vec.getY(),
+                    0, 0,
+                    16, 16,
+                    16, 16
+            );
         }
     }
 }
