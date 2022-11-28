@@ -58,7 +58,7 @@ public class RisingEdgeMinigame extends Minigame {
     private double borderRadius;
     private final int[] elevationMilestones = new int[] {-32, -16, 0, 16, 64, 128};
     public RisingEdgeMinigame() {
-        super(Text.translatable("ddv.minigame.rising_edge"), "0.0.1", SemanticVersioningSuffix.BETA);
+        super(Text.translatable("ddv.minigame.rising_edge"), "1.0.0", SemanticVersioningSuffix.NONE);
     }
 
     @Override
@@ -159,7 +159,8 @@ public class RisingEdgeMinigame extends Minigame {
 
     @Override
     public void onWin(PlayerEntity winningPlayer, World world, Collection<PlayerEntity> players) {
-        players.forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.win_title", winningPlayer.getGameProfile().getName()), true));
+        players.forEach(player -> SharedUtil.pushPlayerTitle(player,
+                Text.translatable("ddv.minigame.rising_edge.win_title", winningPlayer.getGameProfile().getName())));
 
         ServerWorld serverWorld = null;
         try { serverWorld = Objects.requireNonNull(world.getServer()).getWorld(winningPlayer.getWorld().getRegistryKey());
