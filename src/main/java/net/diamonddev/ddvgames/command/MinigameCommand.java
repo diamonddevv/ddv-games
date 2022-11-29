@@ -169,9 +169,11 @@ public class MinigameCommand {
 
         Minigame game = MinigameArgType.getMinigame(context, "minigame");
 
-        //if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();
-
         DDVGamesMod.gameManager.setGame(game);
+        DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
+
+        if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();
+
         DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
 
         DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());
@@ -188,7 +190,10 @@ public class MinigameCommand {
         Minigame game = MinigameArgType.getMinigame(context, "minigame");
         SettingsSet settingsSet = SettingsSetArgType.getSettingsSet(context, "settingset", InitRegistries.MINIGAMES.getId(game));
 
-        //if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();
+        DDVGamesMod.gameManager.setGame(game);
+        DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
+
+        if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();
 
         String name = null, author = null;
         Text text;
@@ -206,9 +211,6 @@ public class MinigameCommand {
             text = Text.translatable("ddv.command.feedback.quickstart_game.settingset.name_author", game.getName().getString(), game.getSemanticVersion().getString(), name, author);
         }
 
-
-        DDVGamesMod.gameManager.setGame(game);
-        DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
         DDVGamesMod.gameManager.setAllSettings(settingsSet);
 
         DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());

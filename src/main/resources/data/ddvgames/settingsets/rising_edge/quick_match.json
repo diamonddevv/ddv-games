@@ -1,0 +1,35 @@
+{
+  "name": "Quick Match",
+  "author": "DiamondDev",
+  "minigame_id": "ddvgames:rising_edge",
+  "keys": [
+    {
+      "key": "borderDistance",
+      "value": 50.0
+    },
+    {
+      "key": "lives",
+      "value": 2.0
+    },
+    {
+      "key": "warmupHeightCondition",
+      "value": 1.0
+    },
+    {
+      "key": "warmupCondition",
+      "value": 48.0
+    },
+    {
+      "key": "riseInterval",
+      "value": 3.0
+    },
+    {
+      "key": "glowing",
+      "value": 1.0
+    },
+    {
+      "key": "naturalRegeneration",
+      "value": 0.0
+    }
+  ]
+}

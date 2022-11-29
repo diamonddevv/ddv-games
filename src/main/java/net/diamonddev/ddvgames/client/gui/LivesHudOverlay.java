@@ -17,7 +17,7 @@ public class LivesHudOverlay implements IHudRenderer {
     private static final Identifier HEART_TEXTURE = DDVGamesMod.id.build("textures/ui/rising_edge/lives.png");
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
-        if (DDVGamesMod.gameManager.getSpecificGameHasStarted(InitMinigames.RISING_EDGE)) {
+        if (DDVGamesClient.hasGameAndRunning(InitMinigames.RISING_EDGE)) {
             int x, y;
             int width, height;
 

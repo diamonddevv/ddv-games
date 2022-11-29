@@ -2,11 +2,14 @@ package net.diamonddev.ddvgames.mixin;
 
 import com.mojang.authlib.GameProfile;
 import net.diamonddev.ddvgames.DDVGamesMod;
+import net.diamonddev.ddvgames.NetcodeConstants;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.minigame.RisingEdgeMinigame;
 import net.diamonddev.ddvgames.minigame.Role;
+import net.diamonddev.ddvgames.network.SyncPlayersS2CPacket;
 import net.diamonddev.ddvgames.registry.InitMinigames;
 import net.diamonddev.ddvgames.util.SharedUtil;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.encryption.PlayerPublicKey;
@@ -42,12 +45,18 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
             SharedUtil.spawnParticle(Objects.requireNonNull(Objects.requireNonNull(this.world.getServer()).getWorld(this.world.getRegistryKey())),
                     ParticleTypes.ELECTRIC_SPARK, 0.5, this.getPos(), SharedUtil.cubeVec(0.22), 50, 0.1);
 
+            if (DDVGamesMod.gameManager.isGameRunning(InitMinigames.RISING_EDGE)) {
+                ((RisingEdgeMinigame)DDVGamesMod.gameManager.getGame()).onDeath(this, this.world);
+            }
 
             DDVGamesEntityComponents.setLives(this, DDVGamesEntityComponents.getLives(this) - 1);
             if (DDVGamesEntityComponents.getLives(this) <= 0) {
                 DDVGamesMod.gameManager.attachRole(this, Role.fromName(RisingEdgeMinigame.SPECTATOR));
                 SharedUtil.changePlayerGamemode(this, GameMode.SPECTATOR);
             }
+
+            // Sync playercount
+            DDVGamesMod.gameManager.getPlayers().forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_PLAYERCOUNT, SyncPlayersS2CPacket.write(DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(RisingEdgeMinigame.PLAYER)).size())));
         }
     }
 }

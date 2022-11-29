@@ -19,7 +19,7 @@ public class RisingEdgeStateIconHudRenderer implements IHudRenderer {
 
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
-        if (DDVGamesMod.gameManager.getSpecificGameHasStarted(InitMinigames.RISING_EDGE) && DDVGamesMod.gameManager.getCurrentState() != null) {
+        if (DDVGamesClient.hasGameAndRunning(InitMinigames.RISING_EDGE) && DDVGamesClient.CURRENT_STATE_NAME != null) {
 
             int x, y;
             int width, height;
@@ -36,7 +36,7 @@ public class RisingEdgeStateIconHudRenderer implements IHudRenderer {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
             // Set Shader Texture to correct Icon
-            Identifier texture = switch (DDVGamesMod.gameManager.getCurrentState().getName()) {
+            Identifier texture = switch (DDVGamesClient.CURRENT_STATE_NAME) {
                 case "warmup" -> WARMUP_ICON;
                 case "pvp" -> PVP_ICON;
                 default -> throw new IllegalStateException("Unexpected value: " + DDVGamesMod.gameManager.getCurrentState().getName());

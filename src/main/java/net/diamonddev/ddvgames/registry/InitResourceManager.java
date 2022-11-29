@@ -72,6 +72,7 @@ public class InitResourceManager implements RegistryInitializer {
                         }
 
                         StringBuilder path = new StringBuilder(id.getPath()).delete(0, 12).reverse().delete(0, 5).reverse(); // Get rid of prefixed initial filepath and .json
+                        path.insert(0, id.getNamespace() + ":"); // Prepend "<namespace>:"
 
                         RESOURCE_SETTINGSSET.put(path.toString(), set);
                     } catch (Exception e) {

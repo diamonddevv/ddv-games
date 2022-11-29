@@ -21,7 +21,7 @@ public class RisingEdgeRoleIconHudRenderer implements IHudRenderer {
 
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
-        if (DDVGamesMod.gameManager.getSpecificGameHasStarted(InitMinigames.RISING_EDGE)) {
+        if (DDVGamesClient.hasGameAndRunning(InitMinigames.RISING_EDGE)) {
 
             int x, y;
             int width, height;

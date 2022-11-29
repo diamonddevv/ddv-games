@@ -1,7 +1,11 @@
 package net.diamonddev.ddvgames.minigame;
 
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
+import net.diamonddev.ddvgames.NetcodeConstants;
+import net.diamonddev.ddvgames.network.SyncGameS2CPacket;
+import net.diamonddev.ddvgames.network.SyncGameStateS2CPacket;
 import net.diamonddev.ddvgames.registry.InitRegistries;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -22,7 +26,7 @@ public class GameManager {
     private Collection<Role> roles;
     private Collection<GameState> states;
     private Minigame game;
-    private Collection<PlayerEntity> players;
+    private final Collection<PlayerEntity> players;
     public PlayerEntity winner;
 
     public GameState currentState;
@@ -67,6 +71,8 @@ public class GameManager {
         if (game != null) {
             this.running = true;
             game.start(executor, this.players, world);
+
+            this.players.forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(game, true)));
         }
     }
 
@@ -84,6 +90,8 @@ public class GameManager {
         if (game.isRunning()) {
             this.running = false;
             game.end(this.players, world);
+
+            this.players.forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(game, false)));
         }
     }
 
@@ -219,6 +227,8 @@ public class GameManager {
             this.game.previousState = previousState;
             game.onStateStarts(currentState, world);
             game.onStateEnds(previousState, world);
+
+            this.players.forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_STATE, SyncGameStateS2CPacket.write(newState.getName())));
         }
     }
 

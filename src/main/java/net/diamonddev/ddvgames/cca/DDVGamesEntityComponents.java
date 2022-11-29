@@ -7,7 +7,7 @@ import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer;
 import dev.onyxstudios.cca.api.v3.entity.RespawnCopyStrategy;
 import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.minigame.Role;
-import net.diamonddev.ddvgames.network.NetcodeConstants;
+import net.diamonddev.ddvgames.NetcodeConstants;
 import net.diamonddev.ddvgames.network.SyncLivesS2CPacket;
 import net.diamonddev.ddvgames.network.SyncRoleS2CPacket;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;

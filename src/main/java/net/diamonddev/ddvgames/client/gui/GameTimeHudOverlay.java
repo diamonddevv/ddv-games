@@ -2,6 +2,7 @@ package net.diamonddev.ddvgames.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.diamonddev.ddvgames.DDVGamesMod;
+import net.diamonddev.ddvgames.client.DDVGamesClient;
 import net.diamonddev.ddvgames.math.MathUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -16,7 +17,7 @@ public class GameTimeHudOverlay implements IHudRenderer {
     private static final Identifier STOPWATCH_TEXTURE = DDVGamesMod.id.build("textures/ui/common/stopwatch.png");
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
-        if (DDVGamesMod.gameManager.getGameHasStarted()) {
+        if (DDVGamesClient.IS_GAME_STARTED) {
             int x, y;
             int width, height;
 

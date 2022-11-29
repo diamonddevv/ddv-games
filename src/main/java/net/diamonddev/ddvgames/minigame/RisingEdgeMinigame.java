@@ -1,16 +1,17 @@
 package net.diamonddev.ddvgames.minigame;
 
 import net.diamonddev.ddvgames.DDVGamesMod;
+import net.diamonddev.ddvgames.NetcodeConstants;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.math.Cube;
+import net.diamonddev.ddvgames.network.SyncPlayersS2CPacket;
 import net.diamonddev.ddvgames.registry.InitRules;
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
 import net.diamonddev.ddvgames.util.SharedUtil;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.FallingBlockEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -21,6 +22,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
@@ -38,6 +40,7 @@ public class RisingEdgeMinigame extends Minigame {
     private static final String USE_HEIGHT_CONDITION = "warmupHeightCondition";
     private static final String WARMUP_CONDITION = "warmupCondition";
     private static final String RISE_INTERVAL = "riseInterval";
+    private static final String USE_SPAWN_PLATFORM = "useSpawnPlatform";
 
     public static final String SPECTATOR = "spectator";
     public static final String PLAYER = "player";
@@ -53,6 +56,8 @@ public class RisingEdgeMinigame extends Minigame {
     public Vec2f center;
     public double voidLevel = 0.0;
     private Vec3d spawnPoint;
+    private boolean spawnPlatform;
+    private Random random = new Random();
 
 
     private double borderRadius;
@@ -76,7 +81,8 @@ public class RisingEdgeMinigame extends Minigame {
         settings.add(new Setting(100.0, BORDER_DIST));
         settings.add(new Setting(1.0, USE_HEIGHT_CONDITION));
         settings.add(new Setting(64.0, WARMUP_CONDITION));
-        settings.add(new Setting(3.0, RISE_INTERVAL));
+        settings.add(new Setting(8.0, RISE_INTERVAL));
+        settings.add(new Setting(1.0, USE_SPAWN_PLATFORM));
         return settings;
     }
 
@@ -106,6 +112,8 @@ public class RisingEdgeMinigame extends Minigame {
         this.center = new Vec2f((float) executor.getX(), (float) executor.getZ());
         this.timer = 0.0;
 
+        this.spawnPlatform = parseAsBoolean(USE_SPAWN_PLATFORM);
+
         // Set players spawns
         this.spawnPoint = SharedUtil.addY(this.center, executor.getY());
         players.forEach(player -> {
@@ -128,13 +136,19 @@ public class RisingEdgeMinigame extends Minigame {
         roledPlayers.forEach(player -> SharedUtil.changePlayerGamemode(player, GameMode.SURVIVAL));
 
         // Glowing
-        roledPlayers.forEach(player -> player.setGlowing(true));
+        if (glowing) roledPlayers.forEach(player -> player.setGlowing(true));
 
         // Set Lives
         roledPlayers.forEach(player -> DDVGamesEntityComponents.setLives(player, lives));
 
         // Clear all players inventories
         roledPlayers.forEach(player -> player.getInventory().clear());
+
+        // Set to Daytime
+        ((ServerWorld)world).setTimeOfDay(0);
+
+        // Sync Playercount
+        players.forEach(p -> ServerPlayNetworking.send((ServerPlayerEntity) p, NetcodeConstants.SYNC_PLAYERCOUNT, SyncPlayersS2CPacket.write(players.size())));
     }
 
     @Override
@@ -286,6 +300,21 @@ public class RisingEdgeMinigame extends Minigame {
         // I removed the particle effect from the datapack version, it probably would cause too much lag on top of the mass block replacing
     }
 
+    public void onDeath(PlayerEntity player, World world) {
+        if (this.spawnPlatform & this.voidLevel >= this.spawnPoint.y) {
+            double height = this.voidLevel + 5;
+            double xPoint = this.random.nextDouble((-this.borderRadius / 2), (borderRadius / 2) + 3);
+            double zPoint = this.random.nextDouble((-this.borderRadius / 2) + 5, (borderRadius / 2 + 3));
+            BlockPos point = new BlockPos(xPoint, height, zPoint);
+            Vec3i op = new Vec3i(2, 0, 2);
+
+            BlockPos.iterate(point.add(op), point.subtract(op)).forEach(pos -> {
+                if (!world.getBlockState(pos).isAir()) {
+                    world.setBlockState(pos, Blocks.BEDROCK.getDefaultState());
+                }
+            });
+        }
+    }
     private void killFallingGravityBlocksBeneathVoid(World world) {
         Cube rise = SharedUtil.createCube(borderRadius, this.center, this.voidLevel, world.getBottomY());
         List<FallingBlockEntity> entities = world.getEntitiesByClass(FallingBlockEntity.class,

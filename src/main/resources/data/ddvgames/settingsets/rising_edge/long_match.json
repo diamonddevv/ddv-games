@@ -1,15 +1,15 @@
 {
-  "name": "Quick Match",
+  "name": "Long Match",
   "author": "DiamondDev",
   "minigame_id": "ddvgames:rising_edge",
   "keys": [
     {
       "key": "borderDistance",
-      "value": 50.0
+      "value": 500.0
     },
     {
       "key": "lives",
-      "value": 2.0
+      "value": 8.0
     },
     {
       "key": "warmupHeightCondition",
@@ -17,19 +17,19 @@
     },
     {
       "key": "warmupCondition",
-      "value": 32.0
+      "value": 85.0
     },
     {
       "key": "riseInterval",
-      "value": 1.0
+      "value": 10.0
     },
     {
       "key": "glowing",
-      "value": 1.0
+      "value": 0.0
     },
     {
       "key": "naturalRegeneration",
-      "value": 0.0
+      "value": 1.0
     }
   ]
 }

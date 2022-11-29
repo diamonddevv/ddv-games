@@ -14,7 +14,7 @@ public class InitRules implements RegistryInitializer {
 
     @Override
     public void register() {
-        PVP = buildBoolean("pvp", true);
+        PVP = buildBoolean("ddvg:pvp", true);
     }
 
     private static Key<BooleanRule> buildBoolean(String name, boolean defaultValue) {

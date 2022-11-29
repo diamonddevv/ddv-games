@@ -2,6 +2,7 @@ package net.diamonddev.ddvgames.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.diamonddev.ddvgames.DDVGamesMod;
+import net.diamonddev.ddvgames.client.DDVGamesClient;
 import net.diamonddev.ddvgames.minigame.RisingEdgeMinigame;
 import net.diamonddev.ddvgames.registry.InitMinigames;
 import net.minecraft.client.MinecraftClient;
@@ -17,7 +18,7 @@ public class VoidLevelHudOverlay implements IHudRenderer {
     private static final Identifier ISLAND_TEXTURE = DDVGamesMod.id.build("textures/ui/rising_edge/island.png");
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
-        if (DDVGamesMod.gameManager.getSpecificGameHasStarted(InitMinigames.RISING_EDGE)) {
+        if (DDVGamesClient.hasGameAndRunning(InitMinigames.RISING_EDGE)) {
             int x, y;
             int width, height;
             RisingEdgeMinigame re = (RisingEdgeMinigame) DDVGamesMod.gameManager.getGame();

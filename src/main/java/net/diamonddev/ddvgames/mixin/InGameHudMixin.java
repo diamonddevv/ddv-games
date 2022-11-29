@@ -42,7 +42,7 @@ public abstract class InGameHudMixin {
             playerCount.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
             roleIcon.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
             phaseIcon.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
-            winnerIcon.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
+            //winnerIcon.onHudRender(matrices, tickDelta, client, this.getTextRenderer());
         }
     }
 
