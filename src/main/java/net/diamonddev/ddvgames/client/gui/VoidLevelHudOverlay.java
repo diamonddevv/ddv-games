@@ -21,7 +21,6 @@ public class VoidLevelHudOverlay implements IHudRenderer {
         if (DDVGamesClient.hasGameAndRunning(InitMinigames.RISING_EDGE)) {
             int x, y;
             int width, height;
-            RisingEdgeMinigame re = (RisingEdgeMinigame) DDVGamesMod.gameManager.getGame();
 
             // Get Width, Height, X and Y
             width = client.getWindow().getScaledWidth();
@@ -41,7 +40,7 @@ public class VoidLevelHudOverlay implements IHudRenderer {
             DrawableHelper.drawTexture(matrixStack, getTextureBindX(BindingSide.RIGHT, x), getTextureBindY(1), 0, 0, 16, 16, 16, 16); // texture
             DrawableHelper.drawTextWithShadow( // text
                     matrixStack, textRenderer,
-                    Text.literal("" + (int) re.voidLevel),
+                    Text.literal("" + DDVGamesClient.VOID_LEVEL),
                     getTextBindX(BindingSide.RIGHT, x), getTextBindY(1),
                     0xffffff // white color in hexadecimal
             );

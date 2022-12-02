@@ -5,6 +5,7 @@ import net.diamonddev.ddvgames.NetcodeConstants;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.math.Cube;
 import net.diamonddev.ddvgames.network.SyncPlayersS2CPacket;
+import net.diamonddev.ddvgames.network.SyncVoidLevelS2CPacket;
 import net.diamonddev.ddvgames.registry.InitRules;
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
 import net.diamonddev.ddvgames.util.SharedUtil;
@@ -296,6 +297,8 @@ public class RisingEdgeMinigame extends Minigame {
             players.forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.rise"), true));
         }
 
+        // Network Void Level
+        players.forEach(p -> ServerPlayNetworking.send((ServerPlayerEntity) p, NetcodeConstants.SYNC_VOIDLEVEL, SyncVoidLevelS2CPacket.write((int) voidLevel)));
 
         // I removed the particle effect from the datapack version, it probably would cause too much lag on top of the mass block replacing
     }

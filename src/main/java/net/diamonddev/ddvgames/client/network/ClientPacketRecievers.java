@@ -69,5 +69,15 @@ public class ClientPacketRecievers implements RegistryInitializer {
 
             client.execute(() -> DDVGamesClient.CURRENT_PLAYERCOUNT = i);
         });
+
+        // Void Level Sync
+        ClientPlayNetworking.registerGlobalReceiver(NetcodeConstants.SYNC_VOIDLEVEL, (client, handler, buf, responseSender) -> {
+            // Get Packet Data
+            SyncVoidLevelS2CPacket.SyncVoidLevelPacketData data = SyncVoidLevelS2CPacket.read(buf);
+
+            int i = data.voidlevel;
+
+            client.execute(() -> DDVGamesClient.VOID_LEVEL = i);
+        });
     }
 }

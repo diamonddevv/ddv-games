@@ -7,6 +7,8 @@
   "ddv.minigame.rising_edge.pvp_enabled.sub": "May the odds be ever in your favour.",
   "ddv.minigame.rising_edge.warmup_start": "Warmup has Started! Good luck, you might need it..",
 
+  "ddv.minigame.speed_tag": "Speed Tag",
+
   "ddv.command.feedback.set_game": "Loaded Minigame: %s %s",
   "ddv.command.feedback.unloaded_game": "Unloaded Minigame.",
   "ddv.command.feedback.get_game": "Minigame currently loaded: %s %s",

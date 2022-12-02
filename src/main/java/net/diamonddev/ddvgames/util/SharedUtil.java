@@ -15,6 +15,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
+import java.util.UUID;
+
 
 public class SharedUtil {
     public static void changePlayerGamemode(PlayerEntity player, GameMode gameMode) {

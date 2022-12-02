@@ -20,10 +20,19 @@ public class DDVGamesClient implements ClientModInitializer {
     public static int CURRENT_PLAYERCOUNT = 0;
 
     public static String CURRENT_STATE_NAME;
+
+    // Rising Edge Specific Game Data
+    public static int VOID_LEVEL = 0;
     @Override
     public void onInitializeClient() {
         new ClientPacketRecievers().register();
     }
+
+    /* TODO:
+    - Client sided Timer instead of a packet every 1/10th second
+    - Sort out player count not being able to count
+    - Fix game ending
+     */
 
     public static boolean hasGameAndRunning(Minigame game) {
         return CURRENT_GAME == game && IS_GAME_STARTED;
