@@ -2,6 +2,7 @@ package net.diamonddev.ddvgames;
 
 import net.diamonddev.ddvgames.minigame.GameManager;
 import net.diamonddev.ddvgames.registry.*;
+import net.diamonddev.libgenetics.common.api.v1.interfaces.RegistryInitializer;
 import net.diamonddev.libgenetics.common.api.v1.util.IdentifierBuilder;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
@@ -37,6 +38,5 @@ public class DDVGamesMod implements ModInitializer {
 		long initTime = System.currentTimeMillis() - start;
 		LOGGER.info("Mod " + modid + " initialized in " + initTime + " millisecond(s)!");
 	}
-
 
 }

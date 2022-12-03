@@ -7,11 +7,13 @@ import net.minecraft.nbt.NbtCompound;
 public class RoleComponent implements Component {
 
     private Role role;
+    private String roleString;
     private final String roleComponent = "Role";
 
     @Override
     public void readFromNbt(NbtCompound tag) {
         this.role = Role.fromName(tag.getString(roleComponent));
+        this.roleString = tag.getString(roleComponent);
     }
 
     @Override
@@ -21,6 +23,10 @@ public class RoleComponent implements Component {
 
     public Role getRole() {
         return role;
+    }
+
+    public String getRoleString() {
+        return roleString;
     }
 
     public void setRole(Role role) {

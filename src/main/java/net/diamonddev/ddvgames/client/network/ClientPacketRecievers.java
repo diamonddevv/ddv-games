@@ -79,5 +79,17 @@ public class ClientPacketRecievers implements RegistryInitializer {
 
             client.execute(() -> DDVGamesClient.VOID_LEVEL = i);
         });
+
+        // Timer Sync
+        ClientPlayNetworking.registerGlobalReceiver(NetcodeConstants.SYNC_TIMER, (client, handler, buf, responseSender) -> {
+            // Get Packet Data
+            SyncTimerS2CPacket.SyncTimePacketData data = SyncTimerS2CPacket.read(buf);
+
+            boolean bl = data.shouldTick;
+
+            client.execute(() -> {
+                DDVGamesClient.TIMER_ENABLED = bl;
+            });
+        });
     }
 }

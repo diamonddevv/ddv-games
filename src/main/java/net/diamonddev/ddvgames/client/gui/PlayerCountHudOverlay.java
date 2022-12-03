@@ -40,7 +40,7 @@ public class PlayerCountHudOverlay implements IHudRenderer {
             DrawableHelper.drawTexture(matrixStack, getTextureBindX(BindingSide.LEFT, x), getTextureBindY(1), 0, 0, 16, 16, 16, 16); // texture
             DrawableHelper.drawTextWithShadow( // text
                     matrixStack, textRenderer,
-                    Text.literal("" + DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(RisingEdgeMinigame.PLAYER)).size()),
+                    Text.literal("" + DDVGamesClient.CURRENT_PLAYERCOUNT),
                     getTextBindX(BindingSide.LEFT, x), getTextBindY(1),
                     0xffffff // white color in hexadecimal
             );

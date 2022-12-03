@@ -32,6 +32,10 @@ public class DDVGamesEntityComponents implements EntityComponentInitializer {
     public static Role getRole(PlayerEntity player) {
         return ROLE.get(player).getRole();
     }
+
+    public static String getRoleName(PlayerEntity player) {
+        return ROLE.get(player).getRoleString();
+    }
     public static void setRole(PlayerEntity player, Role role) {
         ROLE.get(player).setRole(role);
         ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_ROLES_ID, SyncRoleS2CPacket.write(getRole(player), player));

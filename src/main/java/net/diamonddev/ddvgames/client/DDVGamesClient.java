@@ -1,9 +1,11 @@
 package net.diamonddev.ddvgames.client;
 
+import net.diamonddev.ddvgames.EventListeners;
 import net.diamonddev.ddvgames.client.network.ClientPacketRecievers;
 import net.diamonddev.ddvgames.minigame.Minigame;
 import net.diamonddev.ddvgames.minigame.Role;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.entity.player.PlayerEntity;
 
 import java.util.HashMap;
@@ -21,18 +23,21 @@ public class DDVGamesClient implements ClientModInitializer {
 
     public static String CURRENT_STATE_NAME;
 
+    public static boolean TIMER_ENABLED = false;
+    public static double TIMER = 0;
+
     // Rising Edge Specific Game Data
     public static int VOID_LEVEL = 0;
     @Override
     public void onInitializeClient() {
         new ClientPacketRecievers().register();
+
+        EventListeners.onWorldTickClient();
     }
 
-    /* TODO:
-    - Client sided Timer instead of a packet every 1/10th second
-    - Sort out player count not being able to count
-    - Fix game ending
-     */
+    public static double getClientTimer() {
+        return (TIMER / 10.0) * 0.5; // For some reason it was two times fast so i half it /shrug
+    }
 
     public static boolean hasGameAndRunning(Minigame game) {
         return CURRENT_GAME == game && IS_GAME_STARTED;

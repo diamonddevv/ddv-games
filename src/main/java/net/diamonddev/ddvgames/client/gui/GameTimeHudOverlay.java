@@ -39,7 +39,7 @@ public class GameTimeHudOverlay implements IHudRenderer {
             DrawableHelper.drawTexture(matrixStack, getTextureBindX(BindingSide.LEFT, x), getTextureBindY(0), 0, 0, 16, 16, 16, 16); // texture
             DrawableHelper.drawTextWithShadow( // text
                     matrixStack, textRenderer,
-                    Text.literal("" + MathUtil.round(DDVGamesMod.gameManager.getTimer(), 1)), // This is inaccurate for some reason
+                    Text.literal("" + MathUtil.round(DDVGamesClient.getClientTimer(), 1)), // This is inaccurate for some reason
                     getTextBindX(BindingSide.LEFT, x), getTextBindY(0),
                     0xffffff // white color in hexadecimal
             );

@@ -2,9 +2,13 @@ package net.diamonddev.ddvgames.minigame;
 
 
 import net.diamonddev.ddvgames.DDVGamesMod;
+import net.diamonddev.ddvgames.NetcodeConstants;
+import net.diamonddev.ddvgames.network.SyncTimerS2CPacket;
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
@@ -26,7 +30,7 @@ public abstract class Minigame {
     public GameState currentState;
     public GameState previousState;
 
-    public double timer;
+    public int timer;
     protected Minigame(MutableText name, String semanticVersion, SemanticVersioningSuffix versioningSuffix) {
         this.running = false;
         this.name = name;
@@ -45,7 +49,7 @@ public abstract class Minigame {
 
         this.tickClock = 0;
 
-        this.timer = 0.0;
+        this.timer = 0;
     }
 
     public boolean isRunning() {
@@ -98,13 +102,17 @@ public abstract class Minigame {
             this.currentState = GameState.fromName(getStartingStateName());
             this.tickClock = 0;
             this.onStart(executor, players, world);
+            DDVGamesMod.gameManager.getPlayers().forEach(player ->
+                    ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
             DDVGamesMod.gameManager.switchState(currentState, world);
         }
     }
     public void end(Collection<PlayerEntity> players, World world) {
         if (this.isRunning()) {
             this.running = false;
-            this.timer = 0.0;
+            this.timer = 0;
+            DDVGamesMod.gameManager.getPlayers().forEach(player ->
+                    ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
             this.onEnd(players, world);
         }
     }
@@ -134,6 +142,7 @@ public abstract class Minigame {
 
     public void togglePause() {
         this.running = !this.running;
+        DDVGamesMod.gameManager.getPlayers().forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
     }
     public void changeTickClock() {
         tickClock++;

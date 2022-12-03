@@ -111,7 +111,7 @@ public class RisingEdgeMinigame extends Minigame {
         this.borderRadius = parseAsDouble(BORDER_DIST) / 2;
 
         this.center = new Vec2f((float) executor.getX(), (float) executor.getZ());
-        this.timer = 0.0;
+        this.timer = 0;
 
         this.spawnPlatform = parseAsBoolean(USE_SPAWN_PLATFORM);
 
@@ -149,7 +149,8 @@ public class RisingEdgeMinigame extends Minigame {
         ((ServerWorld)world).setTimeOfDay(0);
 
         // Sync Playercount
-        players.forEach(p -> ServerPlayNetworking.send((ServerPlayerEntity) p, NetcodeConstants.SYNC_PLAYERCOUNT, SyncPlayersS2CPacket.write(players.size())));
+        players.forEach(p -> ServerPlayNetworking.send((ServerPlayerEntity) p, NetcodeConstants.SYNC_PLAYERCOUNT,
+                SyncPlayersS2CPacket.write(DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER)).size())));
     }
 
     @Override
@@ -211,10 +212,6 @@ public class RisingEdgeMinigame extends Minigame {
                     }
                 }
             }
-        }
-
-        if (this.getTicks() % 2 == 0) { // For-each Tenth-Second Recursion Loop
-            this.timer += 0.1;
         }
 
         if (this.getTicks() % ascensionInterval == 0) {
@@ -304,6 +301,13 @@ public class RisingEdgeMinigame extends Minigame {
     }
 
     public void onDeath(PlayerEntity player, World world) {
+
+        // Sync playercount
+        DDVGamesMod.gameManager.getPlayers().forEach(p ->
+                ServerPlayNetworking.send((ServerPlayerEntity) p, NetcodeConstants.SYNC_PLAYERCOUNT,
+                        SyncPlayersS2CPacket.write(DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(RisingEdgeMinigame.PLAYER)).size())));
+
+
         if (this.spawnPlatform & this.voidLevel >= this.spawnPoint.y) {
             double height = this.voidLevel + 5;
             double xPoint = this.random.nextDouble((-this.borderRadius / 2), (borderRadius / 2) + 3);

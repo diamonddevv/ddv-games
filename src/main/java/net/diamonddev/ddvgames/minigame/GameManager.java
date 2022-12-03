@@ -91,6 +91,7 @@ public class GameManager {
             this.running = false;
             game.end(this.players, world);
 
+            this.players.forEach(player -> DDVGamesEntityComponents.setRole(player, Role.EMPTY));
             this.players.forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(game, false)));
         }
     }
@@ -133,7 +134,11 @@ public class GameManager {
     }
 
     public Collection<PlayerEntity> getPlayersWithRole(Role role) {
-        return players.stream().filter(player -> DDVGamesEntityComponents.getRole(player).getName().matches(role.getName())).collect(Collectors.toList());
+        Collection<PlayerEntity> roledPlayers = new ArrayList<>();
+        players.forEach(player -> {
+            if (DDVGamesEntityComponents.getRoleName(player).matches(role.getName())) roledPlayers.add(player);
+        });
+        return roledPlayers;
     }
 
     public PlayerEntity getWinner() {
