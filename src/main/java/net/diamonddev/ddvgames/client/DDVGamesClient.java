@@ -32,6 +32,7 @@ public class DDVGamesClient implements ClientModInitializer {
     public void onInitializeClient() {
         new ClientPacketRecievers().register();
 
+        EventListeners.onDisconnectClient();
         EventListeners.onWorldTickClient();
     }
 

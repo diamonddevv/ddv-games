@@ -49,6 +49,14 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
             if (DDVGamesEntityComponents.getLives(this) <= 0) {
                 DDVGamesMod.gameManager.attachRole(this, Role.fromName(RisingEdgeMinigame.SPECTATOR));
                 SharedUtil.changePlayerGamemode(this, GameMode.SPECTATOR);
+
+                if (DDVGamesMod.gameManager.getGameHasStarted() && DDVGamesMod.gameManager.getGame() instanceof RisingEdgeMinigame ri) {
+                    // Sync playercount
+                    ri.PLAYERCOUNT -= 1;
+                    DDVGamesMod.gameManager.getPlayers().forEach(p ->
+                            ServerPlayNetworking.send((ServerPlayerEntity) p, NetcodeConstants.SYNC_PLAYERCOUNT,
+                                    SyncPlayersS2CPacket.write(ri.PLAYERCOUNT)));
+                }
             }
 
             if (DDVGamesMod.gameManager.isGameRunning(InitMinigames.RISING_EDGE)) {

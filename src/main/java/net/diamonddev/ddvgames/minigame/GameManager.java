@@ -134,11 +134,7 @@ public class GameManager {
     }
 
     public Collection<PlayerEntity> getPlayersWithRole(Role role) {
-        Collection<PlayerEntity> roledPlayers = new ArrayList<>();
-        players.forEach(player -> {
-            if (DDVGamesEntityComponents.getRoleName(player).matches(role.getName())) roledPlayers.add(player);
-        });
-        return roledPlayers;
+        return this.players.stream().filter(player -> DDVGamesEntityComponents.getRoleName(player).matches(role.getName())).collect(Collectors.toList());
     }
 
     public PlayerEntity getWinner() {
@@ -150,7 +146,6 @@ public class GameManager {
     }
 
     public void addPlayersWithRole(Collection<ServerPlayerEntity> players, Role role) {
-        this.players.clear();
         this.players.addAll(players);
         players.forEach(player -> attachRole(player, role));
     }

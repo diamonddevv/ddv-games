@@ -59,7 +59,7 @@ public class RisingEdgeMinigame extends Minigame {
     private Vec3d spawnPoint;
     private boolean spawnPlatform;
     private Random random = new Random();
-
+    public int PLAYERCOUNT = 0;
 
     private double borderRadius;
     private final int[] elevationMilestones = new int[] {-32, -16, 0, 16, 64, 128};
@@ -149,8 +149,9 @@ public class RisingEdgeMinigame extends Minigame {
         ((ServerWorld)world).setTimeOfDay(0);
 
         // Sync Playercount
+        PLAYERCOUNT = roledPlayers.size();
         players.forEach(p -> ServerPlayNetworking.send((ServerPlayerEntity) p, NetcodeConstants.SYNC_PLAYERCOUNT,
-                SyncPlayersS2CPacket.write(DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER)).size())));
+                SyncPlayersS2CPacket.write(PLAYERCOUNT)));
     }
 
     @Override
@@ -168,9 +169,10 @@ public class RisingEdgeMinigame extends Minigame {
 
     @Override
     public boolean canWin(PlayerEntity winnerCandidate, Collection<PlayerEntity> players) {
-        Collection<PlayerEntity> cpe = DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER));
-        cpe.remove(winnerCandidate);
-        return cpe.isEmpty();
+        if (PLAYERCOUNT > 2) {
+            return DDVGamesEntityComponents.getRoleName(winnerCandidate).matches(PLAYER);
+        }
+        return false;
     }
 
     @Override
@@ -224,6 +226,7 @@ public class RisingEdgeMinigame extends Minigame {
 
     @Override
     public boolean canStart(Collection<PlayerEntity> players) {
+        System.out.println(DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER)).size());//todo: debug
         return DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER)).size() > 1;
     }
 
@@ -301,12 +304,6 @@ public class RisingEdgeMinigame extends Minigame {
     }
 
     public void onDeath(PlayerEntity player, World world) {
-
-        // Sync playercount
-        DDVGamesMod.gameManager.getPlayers().forEach(p ->
-                ServerPlayNetworking.send((ServerPlayerEntity) p, NetcodeConstants.SYNC_PLAYERCOUNT,
-                        SyncPlayersS2CPacket.write(DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(RisingEdgeMinigame.PLAYER)).size())));
-
 
         if (this.spawnPlatform & this.voidLevel >= this.spawnPoint.y) {
             double height = this.voidLevel + 5;

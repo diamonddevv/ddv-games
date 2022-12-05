@@ -16,6 +16,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -170,11 +171,11 @@ public class MinigameCommand {
         Minigame game = MinigameArgType.getMinigame(context, "minigame");
 
         DDVGamesMod.gameManager.setGame(game);
+        DDVGamesMod.gameManager.getPlayers().clear();
         DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
+
 
         if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();
-
-        DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
 
         DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());
 
@@ -191,6 +192,7 @@ public class MinigameCommand {
         SettingsSet settingsSet = SettingsSetArgType.getSettingsSet(context, "settingset", InitRegistries.MINIGAMES.getId(game));
 
         DDVGamesMod.gameManager.setGame(game);
+        DDVGamesMod.gameManager.getPlayers().clear();
         DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
 
         if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();
