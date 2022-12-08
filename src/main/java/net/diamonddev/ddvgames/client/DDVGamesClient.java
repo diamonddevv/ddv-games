@@ -4,6 +4,7 @@ import net.diamonddev.ddvgames.EventListeners;
 import net.diamonddev.ddvgames.client.network.ClientPacketRecievers;
 import net.diamonddev.ddvgames.minigame.Minigame;
 import net.diamonddev.ddvgames.minigame.Role;
+import net.diamonddev.ddvgames.registry.InitRegistries;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.entity.player.PlayerEntity;

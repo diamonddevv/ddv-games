@@ -1,5 +1,6 @@
 package net.diamonddev.ddvgames.minigame;
 
+import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.NetcodeConstants;
 import net.diamonddev.ddvgames.network.SyncGameS2CPacket;
@@ -15,6 +16,7 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class GameManager {
@@ -27,6 +29,7 @@ public class GameManager {
     private Collection<GameState> states;
     private Minigame game;
     private final Collection<PlayerEntity> players;
+    private final Collection<ServerPlayerEntity> serverPlayers;
     public PlayerEntity winner;
 
     public GameState currentState;
@@ -35,6 +38,7 @@ public class GameManager {
     private GameManager() {
         this.game = null;
         this.players = new ArrayList<>();
+        this.serverPlayers = new ArrayList<>();
         this.winner = null;
         this.settings = new ArrayList<>();
         this.roles = new ArrayList<>();
@@ -70,9 +74,7 @@ public class GameManager {
     public void startGame(Entity executor, World world) {
         if (game != null) {
             this.running = true;
-            game.start(executor, this.players, world);
-
-            this.players.forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(game, true)));
+            game.start(executor, this.serverPlayers, this.players, world);
         }
     }
 
@@ -89,7 +91,7 @@ public class GameManager {
     public void stopGame(World world) {
         if (game.isRunning()) {
             this.running = false;
-            game.end(this.players, world);
+            game.end(this.serverPlayers, world);
 
             this.players.forEach(player -> DDVGamesEntityComponents.setRole(player, Role.EMPTY));
             this.players.forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(game, false)));
@@ -132,9 +134,21 @@ public class GameManager {
     public Collection<PlayerEntity> getPlayers() {
         return players;
     }
+    public Collection<ServerPlayerEntity> getServerPlayers() {
+        return serverPlayers;
+    }
 
     public Collection<PlayerEntity> getPlayersWithRole(Role role) {
-        return this.players.stream().filter(player -> DDVGamesEntityComponents.getRoleName(player).matches(role.getName())).collect(Collectors.toList());
+        Collection<PlayerEntity> players = DDVGamesMod.gameManager.getPlayers();
+
+        players.removeIf(player -> !Objects.equals(DDVGamesEntityComponents.getRole(player).getName(), role.getName()));
+        return players;
+    }
+    public Collection<ServerPlayerEntity> getServerPlayersWithRole(Role role) {
+        Collection<ServerPlayerEntity> players = DDVGamesMod.gameManager.getServerPlayers();
+
+        players.removeIf(player -> !Objects.equals(DDVGamesEntityComponents.getRole(player).getName(), role.getName()));
+        return players;
     }
 
     public PlayerEntity getWinner() {
@@ -143,15 +157,26 @@ public class GameManager {
 
     public void addPlayers(Collection<ServerPlayerEntity> players) {
         this.players.addAll(players);
+        populateServerPlayers(players);
     }
 
     public void addPlayersWithRole(Collection<ServerPlayerEntity> players, Role role) {
         this.players.addAll(players);
+        populateServerPlayers(players);
         players.forEach(player -> attachRole(player, role));
     }
 
+    private void populateServerPlayers(Collection<ServerPlayerEntity> players) {
+        this.serverPlayers.addAll(players);
+    }
     public void removePlayers(Collection<ServerPlayerEntity> players) {
         this.players.removeAll(players);
+        this.serverPlayers.removeAll(players);
+    }
+
+    public void removeRolesAndPlayers(Collection<ServerPlayerEntity> players) {
+        this.removePlayers(players);
+        players.forEach(this::detachRole);
     }
 
     public void attachRole(PlayerEntity player, Role role) {
@@ -228,7 +253,7 @@ public class GameManager {
             game.onStateStarts(currentState, world);
             game.onStateEnds(previousState, world);
 
-            this.players.forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_STATE, SyncGameStateS2CPacket.write(newState.getName())));
+            this.serverPlayers.forEach(player -> ServerPlayNetworking.send(player, NetcodeConstants.SYNC_STATE, SyncGameStateS2CPacket.write(newState.getName())));
         }
     }
 

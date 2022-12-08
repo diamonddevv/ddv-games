@@ -33,6 +33,8 @@ import java.util.Objects;
 public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     @Shadow @Final public MinecraftServer server;
 
+    @Shadow public abstract boolean changeGameMode(GameMode gameMode);
+
     public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile, @Nullable PlayerPublicKey publicKey) {
         super(world, pos, yaw, gameProfile, publicKey);
     }
@@ -45,18 +47,20 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
             SharedUtil.spawnParticle(Objects.requireNonNull(Objects.requireNonNull(this.world.getServer()).getWorld(this.world.getRegistryKey())),
                     ParticleTypes.ELECTRIC_SPARK, 0.5, this.getPos(), SharedUtil.cubeVec(0.22), 50, 0.1);
 
-            DDVGamesEntityComponents.setLives(this, DDVGamesEntityComponents.getLives(this) - 1);
+            DDVGamesEntityComponents.setLives((ServerPlayerEntity)(Object)this, DDVGamesEntityComponents.getLives(this) - 1);
             if (DDVGamesEntityComponents.getLives(this) <= 0) {
-                DDVGamesMod.gameManager.attachRole(this, Role.fromName(RisingEdgeMinigame.SPECTATOR));
-                SharedUtil.changePlayerGamemode(this, GameMode.SPECTATOR);
-
-                if (DDVGamesMod.gameManager.getGameHasStarted() && DDVGamesMod.gameManager.getGame() instanceof RisingEdgeMinigame ri) {
-                    // Sync playercount
-                    ri.PLAYERCOUNT -= 1;
-                    DDVGamesMod.gameManager.getPlayers().forEach(p ->
-                            ServerPlayNetworking.send((ServerPlayerEntity) p, NetcodeConstants.SYNC_PLAYERCOUNT,
-                                    SyncPlayersS2CPacket.write(ri.PLAYERCOUNT)));
+                if (DDVGamesEntityComponents.getRoleName(this).matches(RisingEdgeMinigame.PLAYER)) {
+                    if (DDVGamesMod.gameManager.getGameHasStarted() && DDVGamesMod.gameManager.getGame() instanceof RisingEdgeMinigame ri) {
+                        // Sync playercount
+                        ri.PLAYERCOUNT -= 1;
+                        DDVGamesMod.gameManager.getServerPlayers().forEach(p ->
+                                ServerPlayNetworking.send(p, NetcodeConstants.SYNC_PLAYERCOUNT,
+                                        SyncPlayersS2CPacket.write(ri.PLAYERCOUNT)));
+                    }
                 }
+
+                DDVGamesMod.gameManager.attachRole(this, Role.fromName(RisingEdgeMinigame.SPECTATOR));
+                this.changeGameMode(GameMode.SPECTATOR);
             }
 
             if (DDVGamesMod.gameManager.isGameRunning(InitMinigames.RISING_EDGE)) {

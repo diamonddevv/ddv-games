@@ -171,7 +171,7 @@ public class MinigameCommand {
         Minigame game = MinigameArgType.getMinigame(context, "minigame");
 
         DDVGamesMod.gameManager.setGame(game);
-        DDVGamesMod.gameManager.getPlayers().clear();
+        DDVGamesMod.gameManager.removeRolesAndPlayers(DDVGamesMod.gameManager.getServerPlayers());
         DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
 
 
@@ -192,7 +192,7 @@ public class MinigameCommand {
         SettingsSet settingsSet = SettingsSetArgType.getSettingsSet(context, "settingset", InitRegistries.MINIGAMES.getId(game));
 
         DDVGamesMod.gameManager.setGame(game);
-        DDVGamesMod.gameManager.getPlayers().clear();
+        DDVGamesMod.gameManager.removeRolesAndPlayers(DDVGamesMod.gameManager.getServerPlayers());
         DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
 
         if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();

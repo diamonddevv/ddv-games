@@ -45,9 +45,9 @@ public class DDVGamesEntityComponents implements EntityComponentInitializer {
     public static int getLives(PlayerEntity player) {
         return RISINGEDGE_LIVES.get(player).getInteger();
     }
-    public static void setLives(PlayerEntity player, int i) {
+    public static void setLives(ServerPlayerEntity player, int i) {
         RISINGEDGE_LIVES.get(player).setInteger(i);
-        ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_LIVES_ID, SyncLivesS2CPacket.write(getLives(player), player));
+        ServerPlayNetworking.send(player, NetcodeConstants.SYNC_LIVES_ID, SyncLivesS2CPacket.write(getLives(player), player));
     }
 
 

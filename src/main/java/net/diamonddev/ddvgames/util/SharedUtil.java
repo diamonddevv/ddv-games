@@ -15,31 +15,21 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 
+import java.util.Collection;
 import java.util.UUID;
 
 
 public class SharedUtil {
-    public static void changePlayerGamemode(PlayerEntity player, GameMode gameMode) {
-        try {
-            MinecraftServer server = player.getServer();
-            ServerPlayerEntity serverPlayer = server.getPlayerManager().getPlayer(player.getUuid());
-
-            serverPlayer.changeGameMode(gameMode);
-        } catch (Exception ignored) {}
+    public static void changePlayerGamemodes(Collection<ServerPlayerEntity> players, GameMode gameMode) {
+        players.forEach(p -> p.changeGameMode(gameMode));
     }
 
-    public static void pushPlayerTitle(PlayerEntity player, Text title) {
-        try {
-            ServerPlayerEntity serverPlayer = player.getServer().getPlayerManager().getPlayer(player.getUuid());
-            serverPlayer.networkHandler.sendPacket(new TitleS2CPacket(title));
-        } catch (Exception ignored) {}
+    public static void pushPlayerTitle(ServerPlayerEntity player, Text title) {
+        player.networkHandler.sendPacket(new TitleS2CPacket(title));
     }
 
-    public static void pushPlayerSubtitle(PlayerEntity player, Text subtitle) {
-        try {
-            ServerPlayerEntity serverPlayer = player.getServer().getPlayerManager().getPlayer(player.getUuid());
-            serverPlayer.networkHandler.sendPacket(new SubtitleS2CPacket(subtitle));
-        } catch (Exception ignored) {}
+    public static void pushPlayerSubtitle(ServerPlayerEntity player, Text subtitle) {
+        player.networkHandler.sendPacket(new SubtitleS2CPacket(subtitle));
     }
 
     public static <T extends ParticleEffect> void spawnParticle(ServerWorld serverWorld, T particle, Vec3d pos, Vec3d deltaPos, int count, double speed) {

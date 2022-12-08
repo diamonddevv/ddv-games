@@ -1,6 +1,8 @@
 {
   "ddv.minigame.rising_edge": "Rising Edge",
-  "ddv.minigame.rising_edge.win_title": "%s has won!",
+  "ddv.minigame.rising_edge.birth": "The void has begun to rise...",
+  "ddv.minigame.rising_edge.win_title": "%s has the Rising Edge!",
+  "ddv.minigame.rising_edge.win_subtitle": "GG!",
   "ddv.minigame.rising_edge.rise": "The void rises...",
   "ddv.minigame.rising_edge.rise_milestone": "The void has risen to Y: %s...",
   "ddv.minigame.rising_edge.pvp_enabled": "PVP has enabled",

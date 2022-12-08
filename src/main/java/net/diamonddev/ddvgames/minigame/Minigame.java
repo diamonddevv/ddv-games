@@ -3,6 +3,8 @@ package net.diamonddev.ddvgames.minigame;
 
 import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.NetcodeConstants;
+import net.diamonddev.ddvgames.network.SyncGameS2CPacket;
+import net.diamonddev.ddvgames.network.SyncGameStateS2CPacket;
 import net.diamonddev.ddvgames.network.SyncTimerS2CPacket;
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -61,10 +63,10 @@ public abstract class Minigame {
 
     public abstract ArrayList<GameState> addGameStates(ArrayList<GameState> states);
     public abstract void onStart(Entity executor, Collection<PlayerEntity> players, World world);
-    public abstract void onEnd(Collection<PlayerEntity> players, World world);
+    public abstract void onEnd(Collection<ServerPlayerEntity> players, World world);
 
-    public abstract boolean canWin(PlayerEntity winnerCandidate, Collection<PlayerEntity> players);
-    public abstract void onWin(PlayerEntity winningPlayer, World world, Collection<PlayerEntity> players);
+    public abstract boolean canWin(ServerPlayerEntity winnerCandidate, Collection<ServerPlayerEntity> players);
+    public abstract void onWin(ServerPlayerEntity winningPlayer, World world, Collection<ServerPlayerEntity> players);
 
     public abstract void tickClock(World world);
 
@@ -89,7 +91,7 @@ public abstract class Minigame {
         return players.size() > 1;
     }
 
-    public void start(Entity executor, Collection<PlayerEntity> players, World world) {
+    public void start(Entity executor, Collection<ServerPlayerEntity> serverPlayers, Collection<PlayerEntity> players, World world) {
 
         if (world.getRegistryKey() != World.OVERWORLD) {
             executor.sendMessage(Text.translatable("ddv.minigame.start.unsupportedDimension"));
@@ -102,28 +104,41 @@ public abstract class Minigame {
             this.currentState = GameState.fromName(getStartingStateName());
             this.tickClock = 0;
             this.onStart(executor, players, world);
-            DDVGamesMod.gameManager.getPlayers().forEach(player ->
-                    ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
+
+            // Network Timer
+            serverPlayers.forEach(player ->
+                    ServerPlayNetworking.send(player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
+
             DDVGamesMod.gameManager.switchState(currentState, world);
+
+            // Network Game Info
+            serverPlayers.forEach(player ->
+                    ServerPlayNetworking.send(player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(this, this.running)));
+            serverPlayers.forEach(player ->
+                    ServerPlayNetworking.send(player, NetcodeConstants.SYNC_STATE, SyncGameStateS2CPacket.write(this.currentState.getName())));
         }
     }
-    public void end(Collection<PlayerEntity> players, World world) {
+    public void end(Collection<ServerPlayerEntity> players, World world) {
         if (this.isRunning()) {
             this.running = false;
             this.timer = 0;
-            DDVGamesMod.gameManager.getPlayers().forEach(player ->
-                    ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
+            players.forEach(player ->
+                    ServerPlayNetworking.send(player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
+
+            players.forEach(player ->
+                    ServerPlayNetworking.send(player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(this, this.running)));
+
             this.onEnd(players, world);
         }
     }
 
     public void tryWin(World world) {
         if (this.isRunning()) {
-            for (PlayerEntity player : DDVGamesMod.gameManager.getPlayers()) {
-                if (canWin(player, DDVGamesMod.gameManager.getPlayers())) {
+            for (ServerPlayerEntity player : DDVGamesMod.gameManager.getServerPlayers()) {
+                if (canWin(player, DDVGamesMod.gameManager.getServerPlayers())) {
                     this.winner = player;
-                    onWin(player, this.winner.world, DDVGamesMod.gameManager.getPlayers());
-                    end(DDVGamesMod.gameManager.getPlayers(), world);
+                    onWin(player, this.winner.world, DDVGamesMod.gameManager.getServerPlayers());
+                    end(DDVGamesMod.gameManager.getServerPlayers(), world);
                     this.running = false;
                 }
             }
@@ -142,7 +157,7 @@ public abstract class Minigame {
 
     public void togglePause() {
         this.running = !this.running;
-        DDVGamesMod.gameManager.getPlayers().forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
+        DDVGamesMod.gameManager.getServerPlayers().forEach(player -> ServerPlayNetworking.send(player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
     }
     public void changeTickClock() {
         tickClock++;
