@@ -95,6 +95,7 @@ public class GameManager {
 
             this.players.forEach(player -> DDVGamesEntityComponents.setRole(player, Role.EMPTY));
             this.players.forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(game, false)));
+            this.players.clear();
         }
     }
 
@@ -156,17 +157,20 @@ public class GameManager {
     }
 
     public void addPlayers(Collection<ServerPlayerEntity> players) {
+        players.removeIf(this.players::contains);
         this.players.addAll(players);
         populateServerPlayers(players);
     }
 
     public void addPlayersWithRole(Collection<ServerPlayerEntity> players, Role role) {
+        players.removeIf(this.players::contains);
         this.players.addAll(players);
         populateServerPlayers(players);
         players.forEach(player -> attachRole(player, role));
     }
 
     private void populateServerPlayers(Collection<ServerPlayerEntity> players) {
+        players.removeIf(this.serverPlayers::contains);
         this.serverPlayers.addAll(players);
     }
     public void removePlayers(Collection<ServerPlayerEntity> players) {

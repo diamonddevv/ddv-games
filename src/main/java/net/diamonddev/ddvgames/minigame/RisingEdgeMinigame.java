@@ -235,7 +235,7 @@ public class RisingEdgeMinigame extends Minigame {
 
     @Override
     public boolean canStart(Collection<PlayerEntity> players) {
-        return DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER)).size() > 1;
+        return DDVGamesMod.gameManager.getServerPlayersWithRole(Role.fromName(PLAYER)).size() > 1;
     }
 
     @Override
@@ -259,7 +259,7 @@ public class RisingEdgeMinigame extends Minigame {
 
             writeGamerules(warmup, world);
 
-            DDVGamesMod.gameManager.getPlayers().forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.warmup_start")));
+            DDVGamesMod.gameManager.getServerPlayers().forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.warmup_start")));
 
         } else if (state.getName().matches(PVP)) {
             GameRules pvp = new GameRules();

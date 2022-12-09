@@ -360,9 +360,9 @@ public class MinigameCommand {
         int playerCount = 0;
         StringBuilder playerNames = new StringBuilder();
         String splitter = ", ";
-        Collection<PlayerEntity> players = DDVGamesMod.gameManager.getPlayers();
+        Collection<ServerPlayerEntity> players = DDVGamesMod.gameManager.getServerPlayers();
 
-        players.removeIf(player -> !Objects.equals(DDVGamesEntityComponents.getRole(player).getName(), role.getName()));
+        players.removeIf(player -> !DDVGamesEntityComponents.getRoleName(player).matches(role.getName()));
 
 
         for (PlayerEntity player : players) {
