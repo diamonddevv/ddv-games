@@ -41,30 +41,32 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     @Inject(method = "onDeath", at = @At("HEAD"))
     private void ddvg$risingEdge$onDeath(DamageSource damageSource, CallbackInfo ci) {
+        ServerPlayerEntity spe = (ServerPlayerEntity)(Object)this;
+
         if (DDVGamesMod.gameManager.isGameRunning(InitMinigames.RISING_EDGE)) {
 
             // kill effects and set to spectator after final death
             SharedUtil.spawnParticle(Objects.requireNonNull(Objects.requireNonNull(this.world.getServer()).getWorld(this.world.getRegistryKey())),
                     ParticleTypes.ELECTRIC_SPARK, 0.5, this.getPos(), SharedUtil.cubeVec(0.22), 50, 0.1);
 
-            DDVGamesEntityComponents.setLives((ServerPlayerEntity)(Object)this, DDVGamesEntityComponents.getLives(this) - 1);
-            if (DDVGamesEntityComponents.getLives(this) <= 0) {
-                if (DDVGamesEntityComponents.getRoleName(this).matches(RisingEdgeMinigame.PLAYER)) {
+            DDVGamesEntityComponents.setLives(spe, DDVGamesEntityComponents.getLives(spe) - 1);
+            if (DDVGamesEntityComponents.getLives(spe) <= 0) {
+                if (DDVGamesEntityComponents.getRoleName(spe).matches(RisingEdgeMinigame.PLAYER)) {
                     if (DDVGamesMod.gameManager.getGameHasStarted() && DDVGamesMod.gameManager.getGame() instanceof RisingEdgeMinigame ri) {
                         // Sync playercount
                         ri.PLAYERCOUNT -= 1;
-                        DDVGamesMod.gameManager.getServerPlayers().forEach(p ->
+                        DDVGamesMod.gameManager.getPlayers().forEach(p ->
                                 ServerPlayNetworking.send(p, NetcodeConstants.SYNC_PLAYERCOUNT,
                                         SyncPlayersS2CPacket.write(ri.PLAYERCOUNT)));
                     }
                 }
 
-                DDVGamesMod.gameManager.attachRole(this, Role.fromName(RisingEdgeMinigame.SPECTATOR));
+                DDVGamesMod.gameManager.attachRole(spe, Role.fromName(RisingEdgeMinigame.SPECTATOR));
                 this.changeGameMode(GameMode.SPECTATOR);
             }
 
             if (DDVGamesMod.gameManager.isGameRunning(InitMinigames.RISING_EDGE)) {
-                ((RisingEdgeMinigame)DDVGamesMod.gameManager.getGame()).onDeath(this, this.world);
+                ((RisingEdgeMinigame)DDVGamesMod.gameManager.getGame()).onDeath(this.world);
             }
         }
     }

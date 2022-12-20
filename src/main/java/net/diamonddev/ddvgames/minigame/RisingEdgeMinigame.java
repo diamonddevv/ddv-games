@@ -13,12 +13,10 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.FallingBlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
@@ -96,15 +94,18 @@ public class RisingEdgeMinigame extends Minigame {
     }
 
     @Override
-    public void onStart(Entity executor, Collection<PlayerEntity> players, World world) {
-        Collection<ServerPlayerEntity> spes = DDVGamesMod.gameManager.getServerPlayers();
-
+    public void onStart(Entity executor, Collection<ServerPlayerEntity> players, World world) {
         double borderDist = parseAsDouble(BORDER_DIST);
         boolean glowing = parseAsBoolean(GLOWING);
         int lives = parseAsInt(LIVES);
 
-        Collection<ServerPlayerEntity> roledPlayers = DDVGamesMod.gameManager.getServerPlayersWithRole(Role.fromName(PLAYER));
-        Collection<ServerPlayerEntity> roledSpectators = DDVGamesMod.gameManager.getServerPlayersWithRole(Role.fromName(SPECTATOR));
+        System.out.println("-- CONTROL --");
+
+        Collection<ServerPlayerEntity> roledPlayers = DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER));
+        Collection<ServerPlayerEntity> roledSpectators = DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(SPECTATOR));
+
+        System.out.println(roledPlayers); // TODO: WHAT THE HELL IS WRONG HERE
+        System.out.println(roledSpectators);
 
         this.previousBorderSize = world.getWorldBorder().getSize();
         this.previousCenter = new Vec2f((float)world.getWorldBorder().getCenterX(), (float)world.getWorldBorder().getCenterZ());
@@ -120,10 +121,8 @@ public class RisingEdgeMinigame extends Minigame {
 
         // Set players spawns
         this.spawnPoint = SharedUtil.addY(this.center, executor.getY());
-        spes.forEach(player -> {
-            player.setSpawnPoint(player.getWorld().getRegistryKey(), SharedUtil.vecToBlockPos(this.spawnPoint),
-                    0.0f, true, false);
-        });
+        players.forEach(player -> player.setSpawnPoint(player.getWorld().getRegistryKey(), SharedUtil.vecToBlockPos(this.spawnPoint),
+                0.0f, true, false));
 
         world.getWorldBorder().setCenter(Math.round(executor.getX()), Math.round(executor.getZ()));
         world.getWorldBorder().setSize(borderDist);
@@ -142,7 +141,7 @@ public class RisingEdgeMinigame extends Minigame {
         if (glowing) roledPlayers.forEach(player -> player.setGlowing(true));
 
         // Set Lives
-        DDVGamesMod.gameManager.getServerPlayersWithRole(Role.fromName(PLAYER)).forEach(player -> DDVGamesEntityComponents.setLives(player, lives));
+        roledPlayers.forEach(player -> DDVGamesEntityComponents.setLives(player, lives));
 
         // Clear all players inventories
         roledPlayers.forEach(player -> player.getInventory().clear());
@@ -151,9 +150,9 @@ public class RisingEdgeMinigame extends Minigame {
         ((ServerWorld)world).setTimeOfDay(0);
 
         // Sync Playercount
-        PLAYERCOUNT = DDVGamesMod.gameManager.getServerPlayersWithRole(Role.fromName(PLAYER)).size();
+        PLAYERCOUNT = roledPlayers.size();
 
-        spes.forEach(p -> ServerPlayNetworking.send(p, NetcodeConstants.SYNC_PLAYERCOUNT,
+        players.forEach(p -> ServerPlayNetworking.send(p, NetcodeConstants.SYNC_PLAYERCOUNT,
                 SyncPlayersS2CPacket.write(PLAYERCOUNT)));
 
         // Aesthetic
@@ -165,7 +164,7 @@ public class RisingEdgeMinigame extends Minigame {
                 0.5f,
                 true
         );
-        spes.forEach(player -> SharedUtil.pushPlayerSubtitle(player, Text.translatable("ddv.minigame.rising_edge.birth")));
+        players.forEach(player -> SharedUtil.pushPlayerSubtitle(player, Text.translatable("ddv.minigame.rising_edge.birth")));
     }
 
     @Override
@@ -173,7 +172,7 @@ public class RisingEdgeMinigame extends Minigame {
 
         world.getWorldBorder().setCenter(this.previousCenter.x, this.previousCenter.y);
         world.getWorldBorder().setSize(this.previousBorderSize);
-        DDVGamesMod.gameManager.getServerPlayers().forEach(player -> DDVGamesEntityComponents.setLives(player, 0));
+        DDVGamesMod.gameManager.getPlayers().forEach(player -> DDVGamesEntityComponents.setLives(player, 0));
 
         PLAYERCOUNT = 0;
 
@@ -227,15 +226,15 @@ public class RisingEdgeMinigame extends Minigame {
 
         if (this.getTicks() % ascensionInterval == 0) {
             voidLevel += 1.0;
-            voidRise(world, DDVGamesMod.gameManager.getServerPlayers());
+            voidRise(world, DDVGamesMod.gameManager.getPlayers());
         }
 
         killFallingGravityBlocksBeneathVoid(world);
     }
 
     @Override
-    public boolean canStart(Collection<PlayerEntity> players) {
-        return DDVGamesMod.gameManager.getServerPlayersWithRole(Role.fromName(PLAYER)).size() > 1;
+    public boolean canStart() {
+        return DDVGamesMod.gameManager.getPlayersWithRole(Role.fromName(PLAYER)).size() > 1;
     }
 
     @Override
@@ -259,7 +258,7 @@ public class RisingEdgeMinigame extends Minigame {
 
             writeGamerules(warmup, world);
 
-            DDVGamesMod.gameManager.getServerPlayers().forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.warmup_start")));
+            DDVGamesMod.gameManager.getPlayers().forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.warmup_start")));
 
         } else if (state.getName().matches(PVP)) {
             GameRules pvp = new GameRules();
@@ -268,7 +267,7 @@ public class RisingEdgeMinigame extends Minigame {
 
             writeGamerules(pvp, world);
 
-            this.enablePvp(DDVGamesMod.gameManager.getServerPlayers());
+            this.enablePvp(DDVGamesMod.gameManager.getPlayers());
         }
     }
 
@@ -311,7 +310,7 @@ public class RisingEdgeMinigame extends Minigame {
         // I removed the particle effect from the datapack version, it probably would cause too much lag on top of the mass block replacing
     }
 
-    public void onDeath(PlayerEntity player, World world) {
+    public void onDeath(World world) {
 
         if (this.spawnPlatform & this.voidLevel >= this.spawnPoint.y) {
             double height = this.voidLevel + 5;

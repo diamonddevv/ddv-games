@@ -1,23 +1,20 @@
 package net.diamonddev.ddvgames.minigame;
 
-import net.diamonddev.ddvgames.DDVGamesMod;
-import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.NetcodeConstants;
+import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.network.SyncGameS2CPacket;
 import net.diamonddev.ddvgames.network.SyncGameStateS2CPacket;
 import net.diamonddev.ddvgames.registry.InitRegistries;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class GameManager {
 
@@ -28,8 +25,7 @@ public class GameManager {
     private Collection<Role> roles;
     private Collection<GameState> states;
     private Minigame game;
-    private final Collection<PlayerEntity> players;
-    private final Collection<ServerPlayerEntity> serverPlayers;
+    private final Set<ServerPlayerEntity> players;
     public PlayerEntity winner;
 
     public GameState currentState;
@@ -37,8 +33,7 @@ public class GameManager {
 
     private GameManager() {
         this.game = null;
-        this.players = new ArrayList<>();
-        this.serverPlayers = new ArrayList<>();
+        this.players = new HashSet<>();
         this.winner = null;
         this.settings = new ArrayList<>();
         this.roles = new ArrayList<>();
@@ -71,10 +66,10 @@ public class GameManager {
         return false;
     }
 
-    public void startGame(Entity executor, World world) {
+    public void startGame(Entity executor, ServerWorld world) {
         if (game != null) {
             this.running = true;
-            game.start(executor, this.serverPlayers, this.players, world);
+            game.start(executor, this.players, world);
         }
     }
 
@@ -91,10 +86,10 @@ public class GameManager {
     public void stopGame(World world) {
         if (game.isRunning()) {
             this.running = false;
-            game.end(this.serverPlayers, world);
+            game.end(this.players, world);
 
             this.players.forEach(player -> DDVGamesEntityComponents.setRole(player, Role.EMPTY));
-            this.players.forEach(player -> ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(game, false)));
+            this.players.forEach(player -> ServerPlayNetworking.send(player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(game, false)));
             this.players.clear();
         }
     }
@@ -131,24 +126,28 @@ public class GameManager {
     public Minigame getGame() {
         return this.game;
     }
+    public Set<ServerPlayerEntity> getPlayersWithRole(Role role) {
+        Set<ServerPlayerEntity> p = this.players;
 
-    public Collection<PlayerEntity> getPlayers() {
-        return players;
+        p.forEach(pl -> {
+            if (DDVGamesEntityComponents.getRoleName(pl).matches(role.getName())) {
+                p.remove(pl);
+            }
+        });
+
+
+        if (FabricLoaderImpl.INSTANCE.isDevelopmentEnvironment()) {
+            System.out.println(" -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
+            System.out.println("Roled Players Collection Size: " + p.size());
+            System.out.println("Role Checked: " + role.getName());
+            System.out.println("Collection: " + p);
+            System.out.println("Unfiltered Playerlist: " + this.players);
+            System.out.println(" -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
+        }
+        return this.players;
     }
-    public Collection<ServerPlayerEntity> getServerPlayers() {
-        return serverPlayers;
-    }
 
-    public Collection<PlayerEntity> getPlayersWithRole(Role role) {
-        Collection<PlayerEntity> players = DDVGamesMod.gameManager.getPlayers();
-
-        players.removeIf(player -> !Objects.equals(DDVGamesEntityComponents.getRole(player).getName(), role.getName()));
-        return players;
-    }
-    public Collection<ServerPlayerEntity> getServerPlayersWithRole(Role role) {
-        Collection<ServerPlayerEntity> players = DDVGamesMod.gameManager.getServerPlayers();
-
-        players.removeIf(player -> !Objects.equals(DDVGamesEntityComponents.getRole(player).getName(), role.getName()));
+    public Collection<ServerPlayerEntity> getPlayers() {
         return players;
     }
 
@@ -159,36 +158,34 @@ public class GameManager {
     public void addPlayers(Collection<ServerPlayerEntity> players) {
         players.removeIf(this.players::contains);
         this.players.addAll(players);
-        populateServerPlayers(players);
     }
 
     public void addPlayersWithRole(Collection<ServerPlayerEntity> players, Role role) {
-        players.removeIf(this.players::contains);
-        this.players.addAll(players);
-        populateServerPlayers(players);
-        players.forEach(player -> attachRole(player, role));
-    }
-
-    private void populateServerPlayers(Collection<ServerPlayerEntity> players) {
-        players.removeIf(this.serverPlayers::contains);
-        this.serverPlayers.addAll(players);
+        addPlayers(players);
+        players.forEach(p -> attachRole(p, role));
     }
     public void removePlayers(Collection<ServerPlayerEntity> players) {
         this.players.removeAll(players);
-        this.serverPlayers.removeAll(players);
     }
-
+    public void removePlayers() {
+        this.players.clear();
+    }
     public void removeRolesAndPlayers(Collection<ServerPlayerEntity> players) {
         this.removePlayers(players);
         players.forEach(this::detachRole);
     }
 
-    public void attachRole(PlayerEntity player, Role role) {
+    public void removeRolesAndPlayers() {
+        players.forEach(this::detachRole);
+        players.clear();
+    }
+
+    public void attachRole(ServerPlayerEntity player, Role role) {
         detachRole(player);
         DDVGamesEntityComponents.setRole(player, role);
     }
 
-    public void detachRole(PlayerEntity player) {
+    public void detachRole(ServerPlayerEntity player) {
         DDVGamesEntityComponents.setRole(player, Role.EMPTY);
     }
     public Collection<Setting> getSettings() {
@@ -257,7 +254,7 @@ public class GameManager {
             game.onStateStarts(currentState, world);
             game.onStateEnds(previousState, world);
 
-            this.serverPlayers.forEach(player -> ServerPlayNetworking.send(player, NetcodeConstants.SYNC_STATE, SyncGameStateS2CPacket.write(newState.getName())));
+            this.players.forEach(player -> ServerPlayNetworking.send(player, NetcodeConstants.SYNC_STATE, SyncGameStateS2CPacket.write(newState.getName())));
         }
     }
 

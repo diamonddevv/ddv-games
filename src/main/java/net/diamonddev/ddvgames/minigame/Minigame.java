@@ -62,7 +62,7 @@ public abstract class Minigame {
     public abstract ArrayList<Setting> addSettings(ArrayList<Setting> settings);
 
     public abstract ArrayList<GameState> addGameStates(ArrayList<GameState> states);
-    public abstract void onStart(Entity executor, Collection<PlayerEntity> players, World world);
+    public abstract void onStart(Entity executor, Collection<ServerPlayerEntity> players, World world);
     public abstract void onEnd(Collection<ServerPlayerEntity> players, World world);
 
     public abstract boolean canWin(ServerPlayerEntity winnerCandidate, Collection<ServerPlayerEntity> players);
@@ -87,23 +87,23 @@ public abstract class Minigame {
         return states;
     }
 
-    public boolean canStart(Collection<PlayerEntity> players) {
-        return players.size() > 1;
+    public boolean canStart() {
+        return DDVGamesMod.gameManager.getPlayers().size() > 1;
     }
 
-    public void start(Entity executor, Collection<ServerPlayerEntity> serverPlayers, Collection<PlayerEntity> players, World world) {
+    public void start(Entity executor, Collection<ServerPlayerEntity> serverPlayers, World world) {
 
         if (world.getRegistryKey() != World.OVERWORLD) {
             executor.sendMessage(Text.translatable("ddv.minigame.start.unsupportedDimension"));
             return;
         }
 
-        if (this.canStart(players)) {
+        if (this.canStart()) {
             this.winner = null;
             this.running = true;
             this.currentState = GameState.fromName(getStartingStateName());
             this.tickClock = 0;
-            this.onStart(executor, players, world);
+            this.onStart(executor, serverPlayers, world);
 
             // Network Timer
             serverPlayers.forEach(player ->
@@ -134,11 +134,11 @@ public abstract class Minigame {
 
     public void tryWin(World world) {
         if (this.isRunning()) {
-            for (ServerPlayerEntity player : DDVGamesMod.gameManager.getServerPlayers()) {
-                if (canWin(player, DDVGamesMod.gameManager.getServerPlayers())) {
+            for (ServerPlayerEntity player : DDVGamesMod.gameManager.getPlayers()) {
+                if (canWin(player, DDVGamesMod.gameManager.getPlayers())) {
                     this.winner = player;
-                    onWin(player, this.winner.world, DDVGamesMod.gameManager.getServerPlayers());
-                    end(DDVGamesMod.gameManager.getServerPlayers(), world);
+                    onWin(player, this.winner.world, DDVGamesMod.gameManager.getPlayers());
+                    end(DDVGamesMod.gameManager.getPlayers(), world);
                     this.running = false;
                 }
             }
@@ -157,7 +157,7 @@ public abstract class Minigame {
 
     public void togglePause() {
         this.running = !this.running;
-        DDVGamesMod.gameManager.getServerPlayers().forEach(player -> ServerPlayNetworking.send(player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
+        DDVGamesMod.gameManager.getPlayers().forEach(player -> ServerPlayNetworking.send(player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
     }
     public void changeTickClock() {
         tickClock++;

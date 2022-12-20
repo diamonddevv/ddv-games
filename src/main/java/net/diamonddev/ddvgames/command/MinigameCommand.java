@@ -16,7 +16,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -154,7 +153,7 @@ public class MinigameCommand {
             throw ALREADY_RUNNING.create();
         }
 
-        if (DDVGamesMod.gameManager.getGame().canStart(DDVGamesMod.gameManager.getPlayers())) {
+        if (DDVGamesMod.gameManager.getGame().canStart()) {
             DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());
             Minigame game = DDVGamesMod.gameManager.getGame();
             context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.start_game", game.getName().getString()), true);
@@ -171,11 +170,11 @@ public class MinigameCommand {
         Minigame game = MinigameArgType.getMinigame(context, "minigame");
 
         DDVGamesMod.gameManager.setGame(game);
-        DDVGamesMod.gameManager.removeRolesAndPlayers(DDVGamesMod.gameManager.getServerPlayers());
-        DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
+        DDVGamesMod.gameManager.removePlayers();
+        DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getWorld().getPlayers(), DDVGamesMod.gameManager.getDefaultRole());
 
 
-        if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();
+        if (!DDVGamesMod.gameManager.getGame().canStart()) throw CANNOT_START.create();
 
         DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());
 
@@ -192,10 +191,10 @@ public class MinigameCommand {
         SettingsSet settingsSet = SettingsSetArgType.getSettingsSet(context, "settingset", InitRegistries.MINIGAMES.getId(game));
 
         DDVGamesMod.gameManager.setGame(game);
-        DDVGamesMod.gameManager.removeRolesAndPlayers(DDVGamesMod.gameManager.getServerPlayers());
-        DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getServer().getPlayerManager().getPlayerList(), DDVGamesMod.gameManager.getDefaultRole());
+        DDVGamesMod.gameManager.removePlayers();
+        DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getWorld().getPlayers(), DDVGamesMod.gameManager.getDefaultRole());
 
-        if (!game.canStart(DDVGamesMod.gameManager.getPlayers())) throw CANNOT_START.create();
+        if (!DDVGamesMod.gameManager.getGame().canStart()) throw CANNOT_START.create();
 
         String name = null, author = null;
         Text text;
@@ -360,7 +359,7 @@ public class MinigameCommand {
         int playerCount = 0;
         StringBuilder playerNames = new StringBuilder();
         String splitter = ", ";
-        Collection<ServerPlayerEntity> players = DDVGamesMod.gameManager.getServerPlayers();
+        Collection<ServerPlayerEntity> players = DDVGamesMod.gameManager.getPlayers();
 
         players.removeIf(player -> !DDVGamesEntityComponents.getRoleName(player).matches(role.getName()));
 
@@ -379,7 +378,7 @@ public class MinigameCommand {
     }
 
     public static int exeGetPlayerRole(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        PlayerEntity player = EntityArgumentType.getPlayer(context, "player");
+        ServerPlayerEntity player = EntityArgumentType.getPlayer(context, "player");
         Role role = DDVGamesEntityComponents.getRole(player);
 
         if (Objects.equals(role.getName(), "")) {

@@ -25,8 +25,7 @@
       "net.diamonddev.ddvgames.client.DDVGamesClient"
     ],
     "cardinal-components": [
-      "net.diamonddev.ddvgames.cca.DDVGamesEntityComponents",
-      "net.diamonddev.ddvgames.cca.DDVGamesLevelComponents"
+      "net.diamonddev.ddvgames.cca.DDVGamesEntityComponents"
     ]
   },
   "custom": {

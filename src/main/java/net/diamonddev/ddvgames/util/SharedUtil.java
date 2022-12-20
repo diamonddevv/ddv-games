@@ -5,7 +5,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.particle.ParticleEffect;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -13,10 +12,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
-import net.minecraft.world.World;
 
 import java.util.Collection;
-import java.util.UUID;
+import java.util.function.Predicate;
 
 
 public class SharedUtil {
@@ -70,5 +68,12 @@ public class SharedUtil {
 
     public static ServerPlayerEntity getServerPlayer(PlayerEntity player, ServerWorld world) {
         return world.getServer().getPlayerManager().getPlayer(player.getUuid());
+    }
+
+
+    public static <T> Collection<T> keepOnly(Collection<T> cl, Predicate<T> predicate) {
+        Collection<T> returned = cl;
+        cl.removeIf(predicate.negate());
+        return returned;
     }
 }

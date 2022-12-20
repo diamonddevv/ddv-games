@@ -29,20 +29,20 @@ public class DDVGamesEntityComponents implements EntityComponentInitializer {
         registry.registerForPlayers(RISINGEDGE_LIVES, player -> new IntegerComponent("Lives"), RespawnCopyStrategy.ALWAYS_COPY);
     }
 
-    public static Role getRole(PlayerEntity player) {
+    public static Role getRole(ServerPlayerEntity player) {
         return ROLE.get(player).getRole();
     }
 
-    public static String getRoleName(PlayerEntity player) {
+    public static String getRoleName(ServerPlayerEntity player) {
         return ROLE.get(player).getRoleString();
     }
-    public static void setRole(PlayerEntity player, Role role) {
+    public static void setRole(ServerPlayerEntity player, Role role) {
         ROLE.get(player).setRole(role);
-        ServerPlayNetworking.send((ServerPlayerEntity) player, NetcodeConstants.SYNC_ROLES_ID, SyncRoleS2CPacket.write(getRole(player), player));
+        ServerPlayNetworking.send(player, NetcodeConstants.SYNC_ROLES_ID, SyncRoleS2CPacket.write(getRole(player), player));
     }
 
 
-    public static int getLives(PlayerEntity player) {
+    public static int getLives(ServerPlayerEntity player) {
         return RISINGEDGE_LIVES.get(player).getInteger();
     }
     public static void setLives(ServerPlayerEntity player, int i) {
