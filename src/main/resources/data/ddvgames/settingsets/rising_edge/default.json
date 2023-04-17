@@ -1,4 +1,6 @@
 {
+  "resource_type": "ddvgames:settingset",
+
   "name": "Default Rising Edge Settings",
   "author": "DiamondDev",
   "minigame_id": "ddvgames:rising_edge",

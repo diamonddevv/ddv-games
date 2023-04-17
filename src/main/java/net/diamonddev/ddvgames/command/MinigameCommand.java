@@ -174,12 +174,15 @@ public class MinigameCommand {
         DDVGamesMod.gameManager.addPlayersWithRole(context.getSource().getWorld().getPlayers(), DDVGamesMod.gameManager.getDefaultRole());
 
 
-        if (!DDVGamesMod.gameManager.getGame().canStart()) throw CANNOT_START.create();
+        if (DDVGamesMod.gameManager.getGame().canStart()) {
 
-        DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());
+            DDVGamesMod.gameManager.startGame(context.getSource().getEntity(), context.getSource().getWorld());
 
-        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.quickstart_game", game.getName().getString(), game.getSemanticVersion().getString()), true);
-        return 1;
+            context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.quickstart_game", game.getName().getString(), game.getSemanticVersion().getString()), true);
+            return 1;
+        } else {
+            throw CANNOT_START.create();
+        }
     }
 
     public static int exeQuickStartWithSettingSet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -412,13 +415,13 @@ public class MinigameCommand {
         GameState state = GameStateArgType.getState(context, "state");
 
         DDVGamesMod.gameManager.switchState(state, context.getSource().getWorld());
-        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.jumpState", state.getName()), true);
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.jumpState", state.name()), true);
         return 1;
     }
 
     public static int exeGetState(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         GameState state = DDVGamesMod.gameManager.getCurrentState();
-        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.getState", state.getName()), true);
+        context.getSource().sendFeedback(Text.translatable("ddv.command.feedback.getState", state.name()), true);
         return 1;
     }
 

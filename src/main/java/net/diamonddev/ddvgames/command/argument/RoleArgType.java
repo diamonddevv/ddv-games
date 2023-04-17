@@ -4,8 +4,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.diamonddev.ddvgames.DDVGamesMod;
-import net.diamonddev.ddvgames.command.argument.abstraction.StringArrayListArgType;
 import net.diamonddev.ddvgames.minigame.Role;
+import net.diamonddev.libgenetics.core.command.abstraction.StringArrayListArgType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 

@@ -1,4 +1,6 @@
 {
+  "resource_type": "ddvgames:settingset",
+
   "name": "Quick Match",
   "author": "DiamondDev",
   "minigame_id": "ddvgames:rising_edge",

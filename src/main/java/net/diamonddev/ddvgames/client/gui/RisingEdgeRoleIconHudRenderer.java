@@ -15,8 +15,8 @@ import net.minecraft.util.Identifier;
 
 public class RisingEdgeRoleIconHudRenderer implements IHudRenderer {
 
-    private static final Identifier PLAYER_ICON = DDVGamesMod.id.build("textures/ui/rising_edge/role/player.png");
-    private static final Identifier SPECTATOR_ICON = DDVGamesMod.id.build("textures/ui/rising_edge/role/spectator.png");
+    private static final Identifier PLAYER_ICON = DDVGamesMod.id("textures/ui/rising_edge/role/player.png");
+    private static final Identifier SPECTATOR_ICON = DDVGamesMod.id("textures/ui/rising_edge/role/spectator.png");
 
 
     @Override
@@ -34,7 +34,7 @@ public class RisingEdgeRoleIconHudRenderer implements IHudRenderer {
             y = height;
 
             // initialize rendering for this
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
             // Set Shader Texture to correct Icon

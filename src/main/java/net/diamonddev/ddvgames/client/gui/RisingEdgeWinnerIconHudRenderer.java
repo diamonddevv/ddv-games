@@ -13,7 +13,7 @@ import net.minecraft.util.Identifier;
 
 public class RisingEdgeWinnerIconHudRenderer implements IHudRenderer {
 
-    private static final Identifier CROWN_ICON = DDVGamesMod.id.build("textures/ui/common/crown.png");
+    private static final Identifier CROWN_ICON = DDVGamesMod.id("textures/ui/common/crown.png");
 
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
@@ -30,7 +30,7 @@ public class RisingEdgeWinnerIconHudRenderer implements IHudRenderer {
             y = height;
 
             // initialize rendering for this
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
             // Set Shader Texture to correct Icon

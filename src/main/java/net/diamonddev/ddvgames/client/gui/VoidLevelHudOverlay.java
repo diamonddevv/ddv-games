@@ -15,7 +15,7 @@ import net.minecraft.util.Identifier;
 
 public class VoidLevelHudOverlay implements IHudRenderer {
 
-    private static final Identifier ISLAND_TEXTURE = DDVGamesMod.id.build("textures/ui/rising_edge/island.png");
+    private static final Identifier ISLAND_TEXTURE = DDVGamesMod.id("textures/ui/rising_edge/island.png");
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
         if (DDVGamesClient.hasGameAndRunning(InitMinigames.RISING_EDGE)) {
@@ -30,7 +30,7 @@ public class VoidLevelHudOverlay implements IHudRenderer {
             y = height;
 
             // initialize rendering for this
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
             // Set Shader Texture to Stopwatch

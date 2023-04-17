@@ -1,14 +1,15 @@
 package net.diamonddev.ddvgames.minigame;
 
 import net.diamonddev.ddvgames.DDVGamesMod;
-import net.diamonddev.ddvgames.NetcodeConstants;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.math.Cube;
 import net.diamonddev.ddvgames.network.SyncPlayersS2CPacket;
 import net.diamonddev.ddvgames.network.SyncVoidLevelS2CPacket;
+import net.diamonddev.ddvgames.registry.InitPackets;
 import net.diamonddev.ddvgames.registry.InitRules;
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
 import net.diamonddev.ddvgames.util.SharedUtil;
+import net.diamonddev.libgenetics.common.api.v1.network.nerve.NerveNetworker;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -152,8 +153,12 @@ public class RisingEdgeMinigame extends Minigame {
         // Sync Playercount
         PLAYERCOUNT = roledPlayers.size();
 
-        players.forEach(p -> ServerPlayNetworking.send(p, NetcodeConstants.SYNC_PLAYERCOUNT,
-                SyncPlayersS2CPacket.write(PLAYERCOUNT)));
+        players.forEach(p -> {
+            SyncPlayersS2CPacket.SyncPlayersData data = new SyncPlayersS2CPacket.SyncPlayersData();
+            data.playercount = PLAYERCOUNT;
+
+            NerveNetworker.send(p, InitPackets.SYNC_PLAYERS, data);
+        });
 
         // Aesthetic
         world.playSound(
@@ -211,7 +216,7 @@ public class RisingEdgeMinigame extends Minigame {
         int ascensionInterval = parseAsInt(RISE_INTERVAL) * 20;
 
         if (this.getTicks() % 20 == 0) { // For-each Second Recursion Loop
-            if (!DDVGamesMod.gameManager.getCurrentState().getName().matches(PVP)) {
+            if (!DDVGamesMod.gameManager.getCurrentState().name().matches(PVP)) {
                 if (!heightCondition) {
                     if (this.getTicks() >= warmupCondition) {
                         DDVGamesMod.gameManager.switchState(GameState.fromName(PVP), world);
@@ -249,7 +254,7 @@ public class RisingEdgeMinigame extends Minigame {
 
     @Override
     public void onStateStarts(GameState state, World world) {
-        if (state.getName().matches(WARMUP)) {
+        if (state.name().matches(WARMUP)) {
             GameRules warmup = new GameRules();
             warmup.get(InitRules.PVP).set(false, world.getServer());
             warmup.get(GameRules.NATURAL_REGENERATION).set(true, world.getServer());
@@ -260,7 +265,7 @@ public class RisingEdgeMinigame extends Minigame {
 
             DDVGamesMod.gameManager.getPlayers().forEach(player -> player.sendMessage(Text.translatable("ddv.minigame.rising_edge.warmup_start")));
 
-        } else if (state.getName().matches(PVP)) {
+        } else if (state.name().matches(PVP)) {
             GameRules pvp = new GameRules();
             pvp.get(InitRules.PVP).set(true, world.getServer());
             pvp.get(GameRules.NATURAL_REGENERATION).set(parseAsBoolean(HEALING), world.getServer());
@@ -305,7 +310,12 @@ public class RisingEdgeMinigame extends Minigame {
         }
 
         // Network Void Level
-        players.forEach(p -> ServerPlayNetworking.send(p, NetcodeConstants.SYNC_VOIDLEVEL, SyncVoidLevelS2CPacket.write((int) voidLevel)));
+        players.forEach(p -> {
+            SyncVoidLevelS2CPacket.SyncVoidLevelData data = new SyncVoidLevelS2CPacket.SyncVoidLevelData();
+            data.voidlevel = (int) this.voidLevel;
+
+            NerveNetworker.send(p, InitPackets.SYNC_VOIDLEVEL, data);
+        });
 
         // I removed the particle effect from the datapack version, it probably would cause too much lag on top of the mass block replacing
     }

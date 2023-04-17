@@ -2,24 +2,22 @@ package net.diamonddev.ddvgames.mixin;
 
 import com.mojang.authlib.GameProfile;
 import net.diamonddev.ddvgames.DDVGamesMod;
-import net.diamonddev.ddvgames.NetcodeConstants;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.minigame.RisingEdgeMinigame;
 import net.diamonddev.ddvgames.minigame.Role;
 import net.diamonddev.ddvgames.network.SyncPlayersS2CPacket;
 import net.diamonddev.ddvgames.registry.InitMinigames;
+import net.diamonddev.ddvgames.registry.InitPackets;
 import net.diamonddev.ddvgames.util.SharedUtil;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.diamonddev.libgenetics.common.api.v1.network.nerve.NerveNetworker;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -35,8 +33,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     @Shadow public abstract boolean changeGameMode(GameMode gameMode);
 
-    public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile, @Nullable PlayerPublicKey publicKey) {
-        super(world, pos, yaw, gameProfile, publicKey);
+    public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
+        super(world, pos, yaw, gameProfile);
     }
 
     @Inject(method = "onDeath", at = @At("HEAD"))
@@ -55,9 +53,12 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
                     if (DDVGamesMod.gameManager.getGameHasStarted() && DDVGamesMod.gameManager.getGame() instanceof RisingEdgeMinigame ri) {
                         // Sync playercount
                         ri.PLAYERCOUNT -= 1;
-                        DDVGamesMod.gameManager.getPlayers().forEach(p ->
-                                ServerPlayNetworking.send(p, NetcodeConstants.SYNC_PLAYERCOUNT,
-                                        SyncPlayersS2CPacket.write(ri.PLAYERCOUNT)));
+                        DDVGamesMod.gameManager.getPlayers().forEach(player -> {
+                            SyncPlayersS2CPacket.SyncPlayersData data = new SyncPlayersS2CPacket.SyncPlayersData();
+                            data.playercount = ri.PLAYERCOUNT;
+
+                            NerveNetworker.send(player, InitPackets.SYNC_PLAYERS, data);
+                        });
                     }
                 }
 

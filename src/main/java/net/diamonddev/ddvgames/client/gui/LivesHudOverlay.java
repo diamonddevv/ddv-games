@@ -14,7 +14,7 @@ import net.minecraft.util.Identifier;
 
 public class LivesHudOverlay implements IHudRenderer {
 
-    private static final Identifier HEART_TEXTURE = DDVGamesMod.id.build("textures/ui/rising_edge/lives.png");
+    private static final Identifier HEART_TEXTURE = DDVGamesMod.id("textures/ui/rising_edge/lives.png");
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
         if (DDVGamesClient.hasGameAndRunning(InitMinigames.RISING_EDGE)) {
@@ -29,7 +29,7 @@ public class LivesHudOverlay implements IHudRenderer {
             y = height;
 
             // initialize rendering for this
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
             // Set Shader Texture to Stopwatch

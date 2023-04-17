@@ -14,7 +14,7 @@ import net.minecraft.util.Identifier;
 
 public class GameTimeHudOverlay implements IHudRenderer {
 
-    private static final Identifier STOPWATCH_TEXTURE = DDVGamesMod.id.build("textures/ui/common/stopwatch.png");
+    private static final Identifier STOPWATCH_TEXTURE = DDVGamesMod.id("textures/ui/common/stopwatch.png");
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
         if (DDVGamesClient.IS_GAME_STARTED) {
@@ -29,7 +29,7 @@ public class GameTimeHudOverlay implements IHudRenderer {
             y = height;
 
             // initialize rendering for this
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
             // Set Shader Texture to Stopwatch

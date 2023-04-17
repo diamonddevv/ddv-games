@@ -13,15 +13,15 @@ public class InitCommand implements RegistryInitializer {
     @Override
     public void register() {
         // ARGS
-        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id.build("minigame_command_arg"),
+        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id("minigame_command_arg"),
                 MinigameArgType.class, ConstantArgumentSerializer.of(MinigameArgType::minigame));
-        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id.build("setting_command_arg"),
+        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id("setting_command_arg"),
                 SettingArgType.class, ConstantArgumentSerializer.of(SettingArgType::setting));
-        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id.build("role_command_arg"),
+        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id("role_command_arg"),
                 RoleArgType.class, ConstantArgumentSerializer.of(RoleArgType::role));
-        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id.build("gamestate_command_arg"),
+        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id("gamestate_command_arg"),
                 GameStateArgType.class, ConstantArgumentSerializer.of(GameStateArgType::gamestate));
-        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id.build("settingset_command_arg"),
+        ArgumentTypeRegistry.registerArgumentType(DDVGamesMod.id("settingset_command_arg"),
                 SettingsSetArgType.class, ConstantArgumentSerializer.of(SettingsSetArgType::settingset));
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {

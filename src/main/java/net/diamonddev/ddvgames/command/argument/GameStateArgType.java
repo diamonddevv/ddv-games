@@ -4,8 +4,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.diamonddev.ddvgames.DDVGamesMod;
-import net.diamonddev.ddvgames.command.argument.abstraction.StringArrayListArgType;
 import net.diamonddev.ddvgames.minigame.GameState;
+import net.diamonddev.libgenetics.core.command.abstraction.StringArrayListArgType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
@@ -28,7 +28,7 @@ public class GameStateArgType extends StringArrayListArgType {
         String simpleName = context.getArgument(argumentName, String.class);
         GameState state = null;
         for (GameState s : settings) {
-            if (s.getName().matches(simpleName)) {
+            if (s.name().matches(simpleName)) {
                 state = s;
             }
         }
@@ -45,7 +45,7 @@ public class GameStateArgType extends StringArrayListArgType {
     public ArrayList<String> getArray() {
         ArrayList<String> names = new ArrayList<>();
         if (DDVGamesMod.gameManager.hasGame()) {
-            DDVGamesMod.gameManager.getStates().forEach(state -> names.add(state.getName()));
+            DDVGamesMod.gameManager.getStates().forEach(state -> names.add(state.name()));
         }
         return names;
     }

@@ -2,11 +2,13 @@ package net.diamonddev.ddvgames.minigame;
 
 
 import net.diamonddev.ddvgames.DDVGamesMod;
-import net.diamonddev.ddvgames.NetcodeConstants;
 import net.diamonddev.ddvgames.network.SyncGameS2CPacket;
 import net.diamonddev.ddvgames.network.SyncGameStateS2CPacket;
 import net.diamonddev.ddvgames.network.SyncTimerS2CPacket;
+import net.diamonddev.ddvgames.registry.InitPackets;
+import net.diamonddev.ddvgames.registry.InitRegistries;
 import net.diamonddev.ddvgames.util.SemanticVersioningSuffix;
+import net.diamonddev.libgenetics.common.api.v1.network.nerve.NerveNetworker;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -106,27 +108,51 @@ public abstract class Minigame {
             this.onStart(executor, serverPlayers, world);
 
             // Network Timer
-            serverPlayers.forEach(player ->
-                    ServerPlayNetworking.send(player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
+            serverPlayers.forEach(player -> {
+                SyncTimerS2CPacket.SyncTimerData data = new SyncTimerS2CPacket.SyncTimerData();
+                data.shouldTick = this.running;
+                data.time = this.timer;
+
+                NerveNetworker.send(player, InitPackets.SYNC_TIMER, data);
+            });
 
             DDVGamesMod.gameManager.switchState(currentState, world);
 
             // Network Game Info
-            serverPlayers.forEach(player ->
-                    ServerPlayNetworking.send(player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(this, this.running)));
-            serverPlayers.forEach(player ->
-                    ServerPlayNetworking.send(player, NetcodeConstants.SYNC_STATE, SyncGameStateS2CPacket.write(this.currentState.getName())));
+            serverPlayers.forEach(player ->{
+                SyncGameS2CPacket.SyncGamePacketData data = new SyncGameS2CPacket.SyncGamePacketData();
+                data.gameId = InitRegistries.MINIGAMES.getId(this);
+                data.isRunning = true;
+
+                NerveNetworker.send(player, InitPackets.SYNC_GAME, data);
+            });
+            serverPlayers.forEach(player -> {
+                SyncGameStateS2CPacket.SyncGameStateData data = new SyncGameStateS2CPacket.SyncGameStateData();
+                data.stateName = currentState.name();
+
+                NerveNetworker.send(player, InitPackets.SYNC_STATE, data);
+            });
         }
     }
     public void end(Collection<ServerPlayerEntity> players, World world) {
         if (this.isRunning()) {
             this.running = false;
             this.timer = 0;
-            players.forEach(player ->
-                    ServerPlayNetworking.send(player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
+            players.forEach(player -> {
+                SyncTimerS2CPacket.SyncTimerData data = new SyncTimerS2CPacket.SyncTimerData();
+                data.shouldTick = this.running;
+                data.time = this.timer;
 
-            players.forEach(player ->
-                    ServerPlayNetworking.send(player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(this, this.running)));
+                NerveNetworker.send(player, InitPackets.SYNC_TIMER, data);
+            });
+
+            players.forEach(player ->{
+                SyncGameS2CPacket.SyncGamePacketData data = new SyncGameS2CPacket.SyncGamePacketData();
+                data.gameId = InitRegistries.MINIGAMES.getId(this);
+                data.isRunning = true;
+
+                NerveNetworker.send(player, InitPackets.SYNC_GAME, data);
+            });
 
             this.onEnd(players, world);
         }
@@ -157,7 +183,13 @@ public abstract class Minigame {
 
     public void togglePause() {
         this.running = !this.running;
-        DDVGamesMod.gameManager.getPlayers().forEach(player -> ServerPlayNetworking.send(player, NetcodeConstants.SYNC_TIMER, SyncTimerS2CPacket.write(this.running)));
+        DDVGamesMod.gameManager.getPlayers().forEach(player -> {
+            SyncTimerS2CPacket.SyncTimerData data = new SyncTimerS2CPacket.SyncTimerData();
+            data.shouldTick = this.running;
+            data.time = this.timer;
+
+            NerveNetworker.send(player, InitPackets.SYNC_TIMER, data);
+        });
     }
     public void changeTickClock() {
         tickClock++;

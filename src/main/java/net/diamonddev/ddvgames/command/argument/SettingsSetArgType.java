@@ -3,16 +3,16 @@ package net.diamonddev.ddvgames.command.argument;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.diamonddev.ddvgames.command.argument.abstraction.StringArrayListArgType;
 import net.diamonddev.ddvgames.minigame.SettingsSet;
 import net.diamonddev.ddvgames.registry.InitResourceManager;
+import net.diamonddev.ddvgames.resource.SettingSetResourceListener;
+import net.diamonddev.libgenetics.core.command.abstraction.StringArrayListArgType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class SettingsSetArgType extends StringArrayListArgType {
 
@@ -30,7 +30,7 @@ public class SettingsSetArgType extends StringArrayListArgType {
     public static SettingsSet getSettingsSet(CommandContext<ServerCommandSource> context, String argumentName, Identifier gameId) throws CommandSyntaxException {
         String simpleName = context.getArgument(argumentName, String.class);
         SettingsSet set = null;
-        for (Map.Entry<String, SettingsSet> s : InitResourceManager.RESOURCE_SETTINGSSET.entrySet()) {
+        for (Map.Entry<String, SettingsSet> s : SettingSetResourceListener.RESOURCE_SETTINGSSET.entrySet()) {
             if (s.getKey().matches(simpleName)) {
                 set = s.getValue();
             }
@@ -50,6 +50,6 @@ public class SettingsSetArgType extends StringArrayListArgType {
 
     @Override
     public ArrayList<String> getArray() {
-        return new ArrayList<String>(InitResourceManager.RESOURCE_SETTINGSSET.keySet());
+        return new ArrayList<>(SettingSetResourceListener.RESOURCE_SETTINGSSET.keySet());
     }
 }

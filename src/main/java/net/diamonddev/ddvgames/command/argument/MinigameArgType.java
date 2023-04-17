@@ -6,10 +6,10 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.diamonddev.ddvgames.command.argument.abstraction.RegistryArgType;
 import net.diamonddev.ddvgames.minigame.Minigame;
 import net.diamonddev.ddvgames.registry.InitRegistries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 
 public class MinigameArgType extends RegistryArgType { // Since IdentifierArgumentType exists, its mine now

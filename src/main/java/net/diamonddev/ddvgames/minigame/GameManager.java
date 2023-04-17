@@ -1,10 +1,11 @@
 package net.diamonddev.ddvgames.minigame;
 
-import net.diamonddev.ddvgames.NetcodeConstants;
 import net.diamonddev.ddvgames.cca.DDVGamesEntityComponents;
 import net.diamonddev.ddvgames.network.SyncGameS2CPacket;
 import net.diamonddev.ddvgames.network.SyncGameStateS2CPacket;
+import net.diamonddev.ddvgames.registry.InitPackets;
 import net.diamonddev.ddvgames.registry.InitRegistries;
+import net.diamonddev.libgenetics.common.api.v1.network.nerve.NerveNetworker;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.entity.Entity;
@@ -89,7 +90,13 @@ public class GameManager {
             game.end(this.players, world);
 
             this.players.forEach(player -> DDVGamesEntityComponents.setRole(player, Role.EMPTY));
-            this.players.forEach(player -> ServerPlayNetworking.send(player, NetcodeConstants.SYNC_GAME, SyncGameS2CPacket.write(game, false)));
+            this.players.forEach(player -> {
+                SyncGameS2CPacket.SyncGamePacketData data = new SyncGameS2CPacket.SyncGamePacketData();
+                data.gameId = getCurrentGameId();
+                data.isRunning = false;
+
+                NerveNetworker.send(player, InitPackets.SYNC_GAME, data);
+            });
             this.players.clear();
         }
     }
@@ -254,7 +261,12 @@ public class GameManager {
             game.onStateStarts(currentState, world);
             game.onStateEnds(previousState, world);
 
-            this.players.forEach(player -> ServerPlayNetworking.send(player, NetcodeConstants.SYNC_STATE, SyncGameStateS2CPacket.write(newState.getName())));
+            this.players.forEach(player -> {
+                SyncGameStateS2CPacket.SyncGameStateData data = new SyncGameStateS2CPacket.SyncGameStateData();
+                data.stateName = currentState.name();
+
+                NerveNetworker.send(player, InitPackets.SYNC_STATE, data);
+            });
         }
     }
 

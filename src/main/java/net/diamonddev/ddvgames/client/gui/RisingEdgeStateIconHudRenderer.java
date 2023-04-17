@@ -14,8 +14,8 @@ import net.minecraft.util.Identifier;
 
 public class RisingEdgeStateIconHudRenderer implements IHudRenderer {
 
-    private static final Identifier WARMUP_ICON = DDVGamesMod.id.build("textures/ui/rising_edge/phase/warmup.png");
-    private static final Identifier PVP_ICON = DDVGamesMod.id.build("textures/ui/rising_edge/phase/pvp.png");
+    private static final Identifier WARMUP_ICON = DDVGamesMod.id("textures/ui/rising_edge/phase/warmup.png");
+    private static final Identifier PVP_ICON = DDVGamesMod.id("textures/ui/rising_edge/phase/pvp.png");
 
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta, MinecraftClient client, TextRenderer textRenderer) {
@@ -32,14 +32,14 @@ public class RisingEdgeStateIconHudRenderer implements IHudRenderer {
             y = height;
 
             // initialize rendering for this
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
             // Set Shader Texture to correct Icon
             Identifier texture = switch (DDVGamesClient.CURRENT_STATE_NAME) {
                 case "warmup" -> WARMUP_ICON;
                 case "pvp" -> PVP_ICON;
-                default -> throw new IllegalStateException("Unexpected value: " + DDVGamesMod.gameManager.getCurrentState().getName());
+                default -> throw new IllegalStateException("Unexpected value: " + DDVGamesMod.gameManager.getCurrentState().name());
             };
 
             RenderSystem.setShaderTexture(0, texture);

@@ -4,7 +4,7 @@ import net.diamonddev.ddvgames.DDVGamesMod;
 import net.diamonddev.ddvgames.minigame.Minigame;
 import net.diamonddev.libgenetics.common.api.v1.interfaces.RegistryInitializer;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registry;
 
 public class InitRegistries implements RegistryInitializer {
     public static Registry<Minigame> MINIGAMES;
@@ -14,7 +14,7 @@ public class InitRegistries implements RegistryInitializer {
     public void register() {
         MINIGAMES = FabricRegistryBuilder.createSimple(
                 Minigame.class,
-                DDVGamesMod.id.build("minigames")
+                DDVGamesMod.id("minigames")
         ).buildAndRegister();
 
     }
